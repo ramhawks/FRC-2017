@@ -57,7 +57,7 @@ public class Robot extends SampleRobot {
 			// Get a CvSink. This will capture Mats from the camera
 			CvSink cvSink = CameraServer.getInstance().getVideo();
 			// Setup a CvSource. This will send images back to the Dashboard
-			CvSource outputStream = CameraServer.getInstance().putVideo("Rectangle", 640, 480);
+			CvSource outputStream = CameraServer.getInstance().putVideo("10.30.90.89", 640, 480);
 
 			// Mats are very memory expensive. Lets reuse this Mat.
 			Mat mat = new Mat();
@@ -75,8 +75,8 @@ public class Robot extends SampleRobot {
 					continue;
 				}
 				// Put a rectangle on the image
-				Imgproc.rectangle(mat, new Point(100, 100), new Point(400, 400),
-						new Scalar(255, 255, 255), 5);
+				/*Imgproc.rectangle(mat, new Point(100, 100), new Point(400, 400),
+						new Scalar(255, 255, 255), 5);*/
 				// Give the output stream a new image to display
 				outputStream.putFrame(mat);
 			}
