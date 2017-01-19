@@ -6,14 +6,14 @@ import edu.wpi.cscore.AxisCamera;
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.CvSource;
 import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
-import edu.wpi.first.wpilibj.SampleRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-public class Robot extends SampleRobot {
+public class Robot extends IterativeRobot {
 	RobotDrive myRobot = new RobotDrive(0, 1);
 	Joystick stick = new Joystick(0);
 	final String defaultAuto = "Default";
@@ -69,19 +69,8 @@ public class Robot extends SampleRobot {
 		SmartDashboard.putData("Auto modes", chooser);
 	}
 
-	/**
-	 * This autonomous (along with the chooser code above) shows how to select
-	 * between different autonomous modes using the dashboard. The sendable
-	 * chooser code works with the Java SmartDashboard. If you prefer the
-	 * LabVIEW Dashboard, remove all of the chooser code and uncomment the
-	 * getString line to get the auto name from the text box below the Gyro
-	 *
-	 * You can add additional auto modes by adding additional comparisons to the
-	 * if-else structure below with additional strings. If using the
-	 * SendableChooser make sure to add them to the chooser code above as well.
-	 */
 	@Override
-	public void autonomous() {
+	public void autonomousInit() {
 		String autoSelected = chooser.getSelected();
 		// String autoSelected = SmartDashboard.getString("Auto Selector",
 		// defaultAuto);
@@ -102,25 +91,31 @@ public class Robot extends SampleRobot {
 			myRobot.drive(0.0, 0.0); // stop robot
 			break;
 		}
+	}	
+
+	@Override
+	public void autonomousPeriodic() {
 	}
 
-	/**
-	 * Runs the motors with arcade steering.
-	 */
 	@Override
-	public void operatorControl() {
+	public void teleopInit() {
+	}
+	
+	@Override
+	public void teleopPeriodic() {
 		myRobot.setSafetyEnabled(true);
-		while (isOperatorControl() && isEnabled()) {
-			myRobot.arcadeDrive(stick); // drive with arcade style (use right
+
+		myRobot.arcadeDrive(stick); // drive with arcade style (use right
 										// stick)
-			Timer.delay(0.005); // wait for a motor update time
-		}
+		Timer.delay(0.005); // wait for a motor update time
+
+	}
+	
+	@Override
+	public void testInit() {
 	}
 
-	/**
-	 * Runs during test mode
-	 */
 	@Override
-	public void test() {
+	public void testPeriodic() {
 	}
 }
