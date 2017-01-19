@@ -2,28 +2,60 @@ package org.usfirst.frc.team3090.robot;
 
 import org.opencv.core.Mat;
 
+import com.kauailabs.navx.frc.AHRS;
+
 import edu.wpi.cscore.AxisCamera;
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.CvSource;
 import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.PIDController;
+import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-public class Robot extends IterativeRobot {
+public class Robot extends IterativeRobot implements PIDOutput {
 	RobotDrive myRobot = new RobotDrive(0, 1);
 	Joystick stick = new Joystick(0);
 	final String defaultAuto = "Default";
 	final String customAuto = "My Auto";
 	SendableChooser<String> chooser = new SendableChooser<>();
 	
+	AHRS ahrs;
+	PIDController pidController;
+	
+	static final double kP = 0.03;
+	static final double kI = 0.00;
+	static final double kD = 0.00;
+	static final double kF = 0.00;
+	
+	static final double kToleranceDegrees = 2.0f;
+	
 	Thread vision_thread;
 
 	public Robot() {
 		myRobot.setExpiration(0.1);
+		
+		try {
+			ahrs = new AHRS(I2C.Port.kMXP);
+		} catch (RuntimeException ex) {
+			// TODO Auto-generated catch block
+			DriverStation.reportError("Error instantiating navX-MXP:  " + ex.getMessage(), true);
+		}
+		pidController = new PIDController(kP, kI, kD, ahrs, this);
+		
+		pidController.setInputRange(-180.0f,  180.0f);
+	    pidController.setOutputRange(-1.0, 1.0);
+	    pidController.setAbsoluteTolerance(kToleranceDegrees);
+	    pidController.setContinuous(true);
+	    
+	    LiveWindow.addActuator("DriveSystem", "Rotate Controller", pidController);
 	}
 
 	@Override
@@ -117,5 +149,10 @@ public class Robot extends IterativeRobot {
 
 	@Override
 	public void testPeriodic() {
+	}
+
+	@Override
+	public void pidWrite(double output) {
+		
 	}
 }
