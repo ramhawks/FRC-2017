@@ -11,6 +11,8 @@
 | Down left stick  |   8 |
 | Down right stick |   9 |
 
+
+
 | Axis          | Num |
 |---------------+-----|
 | Left stick X  |   0 |
