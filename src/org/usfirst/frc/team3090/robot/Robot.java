@@ -71,7 +71,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 			// Get a CvSink. This will capture Mats from the camera
 			CvSink cvSink = CameraServer.getInstance().getVideo();
 			// Setup a CvSource. This will send images back to the Dashboard
-			CvSource outputStream = CameraServer.getInstance().putVideo("10.30.90.89", 640, 480);
+			CvSource outputStream = CameraServer.getInstance().putVideo("Camera", 640, 480);
 
 			// Mats are very memory expensive. Lets reuse this Mat.
 			Mat mat = new Mat();
