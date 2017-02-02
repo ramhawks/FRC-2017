@@ -15,13 +15,14 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.RobotDrive.MotorType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends IterativeRobot implements PIDOutput {
-	RobotDrive myRobot = new RobotDrive(0, 1);
+	RobotDrive myRobot = new RobotDrive(Parts.front_left, Parts.back_left, Parts.front_right, Parts.back_right);
 	Joystick stick = new Joystick(0);
 	final String defaultAuto = "Default";
 	final String customAuto = "My Auto";
@@ -98,6 +99,9 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		vision_thread.setDaemon(true);
 		vision_thread.start();
 		
+		//myRobot.setInvertedMotor(MotorType.kFrontRight, true);
+		//myRobot.setInvertedMotor(MotorType.kRearRight, true);
+		
 		chooser.addDefault("Default Auto", defaultAuto);
 		chooser.addObject("My Auto", customAuto);
 		SmartDashboard.putData("Auto modes", chooser);
@@ -137,7 +141,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	
 	@Override
 	public void teleopPeriodic() {
-		boolean rotateToAngle = false;
+		/*boolean rotateToAngle = false;
 		
 		myRobot.setSafetyEnabled(true);
 
@@ -162,13 +166,16 @@ public class Robot extends IterativeRobot implements PIDOutput {
             /* calculated rotation rate (or joystick Z axis),         */
             /* depending upon whether "rotate to angle" is active.    */
         	
-    		myRobot.arcadeDrive(-stick.getY(), currentRotationRate); // drive with arcade style (use right
+    		//myRobot.arcadeDrive(-stick.getY(), currentRotationRate); // drive with arcade style (use right
         	
             //myRobot.mecanumDrive_Cartesian(stick.getX(), stick.getY(), 
                                            //currentRotationRate, ahrs.getAngle());
-        } catch( RuntimeException ex ) {
+        /*} catch( RuntimeException ex ) {
             DriverStation.reportError("Error communicating with drive system:  " + ex.getMessage(), true);
-        }
+        }*/
+    	
+    	myRobot.arcadeDrive(stick, true);
+    	
         Timer.delay(0.005);	
 
 	}
