@@ -22,7 +22,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends IterativeRobot implements PIDOutput {
-	RobotDrive myRobot = new RobotDrive(Parts.front_left, Parts.back_left, Parts.front_right, Parts.back_right);
+	RobotDrive myRobot = new RobotDrive(Parts.back_left, Parts.front_left, Parts.back_right, Parts.front_right);
 	Joystick stick = new Joystick(0);
 	final String defaultAuto = "Default";
 	final String customAuto = "My Auto";
