@@ -14,8 +14,8 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDOutput;
+import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj.RobotDrive;
-import edu.wpi.first.wpilibj.RobotDrive.MotorType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -40,6 +40,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	
 	double rotateToAngleRate;
 	
+	PWM sonar;
+	
 	Thread vision_thread;
 
 	public Robot() {
@@ -59,6 +61,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	    pidController.setContinuous(true);
 	    
 	    LiveWindow.addActuator("DriveSystem", "Rotate Controller", pidController);
+	    
+	    sonar = new PWM(0);
 	}
 
 	@Override
@@ -175,6 +179,9 @@ public class Robot extends IterativeRobot implements PIDOutput {
         }*/
     	
     	myRobot.arcadeDrive(stick, true);
+    	
+    	SmartDashboard.putNumber("Sonar", sonar.getRaw());
+    	SmartDashboard.putNumber("Inches", ((double) sonar.getRaw()) / 147.0);
     	
         Timer.delay(0.005);	
 
