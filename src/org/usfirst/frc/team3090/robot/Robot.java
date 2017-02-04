@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -42,9 +43,16 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	double rotateToAngleRate;
 	
 	AnalogInput sonar;
+	AnalogInput sonarAlso;
+	
+	Solenoid ourTestSolenoid;
+	
+	public boolean soleState;
 	
 	Thread vision_thread;
 
+	
+	
 	public Robot() {
 		myRobot.setExpiration(0.1);
 		
@@ -63,7 +71,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	    
 	    LiveWindow.addActuator("DriveSystem", "Rotate Controller", pidController);
 	    
-	    sonar = new AnalogInput(0);
+	    ourTestSolenoid = new Solenoid(1);
 	}
 
 	@Override
@@ -110,6 +118,9 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		chooser.addDefault("Default Auto", defaultAuto);
 		chooser.addObject("My Auto", customAuto);
 		SmartDashboard.putData("Auto modes", chooser);
+		
+		sonar = new AnalogInput(5);
+		sonarAlso = new AnalogInput(4);
 	}
 
 	@Override
@@ -181,8 +192,28 @@ public class Robot extends IterativeRobot implements PIDOutput {
     	
     	myRobot.arcadeDrive(stick, true);
     	
-    	SmartDashboard.putNumber("Sonar", sonar.getAverageVoltage());
+    	SmartDashboard.putNumber("Value", sonar.getValue());
+    	SmartDashboard.putNumber("Voltage", sonar.getVoltage());
+    	SmartDashboard.putNumber("Average Value", sonar.getAverageValue());
+    	SmartDashboard.putNumber("Average Voltage", sonar.getAverageVoltage());
+    	
+    	SmartDashboard.putNumber("ValueAlso", sonarAlso.getValue());
+    	SmartDashboard.putNumber("VoltageAlso", sonarAlso.getVoltage());
+    	SmartDashboard.putNumber("Average Value Also", sonarAlso.getAverageValue());
+    	SmartDashboard.putNumber("Average Voltage Also", sonarAlso.getAverageVoltage());
+    
+    	double sensorValue = sonarAlso.getVoltage();
+    	sensorValue = (sensorValue / (5.0 / 5120.0) * 25.4);
+    	SmartDashboard.putNumber("sonarAlsoProcessed", sensorValue);
     	//SmartDashboard.putNumber("Inches", ((double) sonar.getValue()) / 147.0);
+    	
+    	if (stick.getRawButton(4) == true){
+    		soleState = true;
+    	} 
+    	if (stick.getRawButton(1) == true){
+    		soleState = false;
+    	}
+    	ourTestSolenoid.set(soleState);
     	
         Timer.delay(0.005);	
 
