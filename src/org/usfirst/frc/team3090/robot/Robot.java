@@ -7,6 +7,7 @@ import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.cscore.AxisCamera;
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.CvSource;
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.I2C;
@@ -40,7 +41,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	
 	double rotateToAngleRate;
 	
-	PWM sonar;
+	AnalogInput sonar;
 	
 	Thread vision_thread;
 
@@ -62,7 +63,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	    
 	    LiveWindow.addActuator("DriveSystem", "Rotate Controller", pidController);
 	    
-	    sonar = new PWM(0);
+	    sonar = new AnalogInput(0);
 	}
 
 	@Override
@@ -180,8 +181,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
     	
     	myRobot.arcadeDrive(stick, true);
     	
-    	SmartDashboard.putNumber("Sonar", sonar.getRaw());
-    	SmartDashboard.putNumber("Inches", ((double) sonar.getRaw()) / 147.0);
+    	SmartDashboard.putNumber("Sonar", sonar.getAverageVoltage());
+    	//SmartDashboard.putNumber("Inches", ((double) sonar.getValue()) / 147.0);
     	
         Timer.delay(0.005);	
 
