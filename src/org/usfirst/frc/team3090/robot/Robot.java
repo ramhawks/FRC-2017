@@ -15,13 +15,14 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDOutput;
-import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.Sendable;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.tables.ITable;
 
 public class Robot extends IterativeRobot implements PIDOutput {
 	RobotDrive myRobot = new RobotDrive(Parts.back_left, Parts.front_left, Parts.back_right, Parts.front_right);
@@ -41,7 +42,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	static final double kToleranceDegrees = 2.0f;
 	
 	double rotateToAngleRate;
-	
+		
 	AnalogInput sonar;
 	AnalogInput sonarAlso;
 	
@@ -120,7 +121,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		SmartDashboard.putData("Auto modes", chooser);
 		
 		sonar = new AnalogInput(5);
-		sonarAlso = new AnalogInput(4);
+		sonarAlso = new AnalogInput(0);
 	}
 
 	@Override
@@ -197,15 +198,20 @@ public class Robot extends IterativeRobot implements PIDOutput {
     	SmartDashboard.putNumber("Average Value", sonar.getAverageValue());
     	SmartDashboard.putNumber("Average Voltage", sonar.getAverageVoltage());
     	
-    	SmartDashboard.putNumber("ValueAlso", sonarAlso.getValue());
-    	SmartDashboard.putNumber("VoltageAlso", sonarAlso.getVoltage());
-    	SmartDashboard.putNumber("Average Value Also", sonarAlso.getAverageValue());
-    	SmartDashboard.putNumber("Average Voltage Also", sonarAlso.getAverageVoltage());
+    	SmartDashboard.putNumber("ValueA", sonarAlso.getValue());
+    	SmartDashboard.putNumber("VoltageA", sonarAlso.getVoltage());
+    	SmartDashboard.putNumber("Average ValueA", sonarAlso.getAverageValue());
+    	SmartDashboard.putNumber("Average VoltageA", sonarAlso.getAverageVoltage());
     
-    	double sensorValue = sonarAlso.getVoltage();
-    	sensorValue = (sensorValue / (5.0 / 5120.0) * 25.4);
-    	SmartDashboard.putNumber("sonarAlsoProcessed", sensorValue);
-    	//SmartDashboard.putNumber("Inches", ((double) sonar.getValue()) / 147.0);
+    	SmartDashboard.putNumber("Value Inches", sonar.getValue() / 0.0098);
+    	SmartDashboard.putNumber("Voltage Inches", sonar.getVoltage() / 0.0098);
+    	SmartDashboard.putNumber("Average Value Inches", sonar.getAverageValue() / 0.0098);
+    	SmartDashboard.putNumber("Average Voltage Inches", sonar.getAverageVoltage() / 0.0098);
+    	
+    	SmartDashboard.putNumber("ValueA mm", sonarAlso.getValue() / 0.000977);
+    	SmartDashboard.putNumber("VoltageA mm", sonarAlso.getVoltage() / 0.000977);
+    	SmartDashboard.putNumber("Average ValueA mm", sonarAlso.getAverageValue() / 0.000977);
+    	SmartDashboard.putNumber("Average VoltageA mm", sonarAlso.getAverageVoltage() / 0.000977);
     	
     	if (stick.getRawButton(4) == true){
     		soleState = true;
