@@ -9,6 +9,8 @@ import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.CvSource;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.IterativeRobot;
@@ -16,13 +18,11 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.RobotDrive;
-import edu.wpi.first.wpilibj.Sendable;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.tables.ITable;
 
 public class Robot extends IterativeRobot implements PIDOutput {
 	RobotDrive myRobot = new RobotDrive(Parts.back_left, Parts.front_left, Parts.back_right, Parts.front_right);
@@ -52,7 +52,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	
 	Thread vision_thread;
 
-	
+	DoubleSolenoid gear_switch;
 	
 	public Robot() {
 		myRobot.setExpiration(0.1);
@@ -122,6 +122,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		
 		sonar = new AnalogInput(5);
 		sonarAlso = new AnalogInput(0);
+		
+		gear_switch = new DoubleSolenoid(1, 0, 1);
 	}
 
 	@Override
@@ -190,6 +192,14 @@ public class Robot extends IterativeRobot implements PIDOutput {
         /*} catch( RuntimeException ex ) {
             DriverStation.reportError("Error communicating with drive system:  " + ex.getMessage(), true);
         }*/
+		
+		if (stick.getRawButton(1)) {
+			gear_switch.set(Value.kForward);
+		} else if (stick.getRawButton(4)) {
+			gear_switch.set(Value.kReverse);
+		} else if (stick.getRawButton(3)) {
+			gear_switch.set(Value.kOff);
+		}
     	
     	myRobot.arcadeDrive(stick, true);
     	
