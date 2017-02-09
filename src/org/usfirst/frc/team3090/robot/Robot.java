@@ -50,7 +50,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	
 	public boolean soleState;
 	
-	Thread vision_thread;
+	volatile Thread vision_thread;
 
 	DoubleSolenoid gear_switch;
 	
@@ -112,7 +112,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		});
 		vision_thread.setDaemon(true);
 		vision_thread.start();
-		
+				
 		//myRobot.setInvertedMotor(MotorType.kFrontRight, true);
 		//myRobot.setInvertedMotor(MotorType.kRearRight, true);
 		
@@ -124,6 +124,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		sonarAlso = new AnalogInput(0);
 		
 		gear_switch = new DoubleSolenoid(1, 0, 1);
+		
+		SmartDashboard.putNumber("Lift", 0.5);
 	}
 
 	@Override
@@ -192,6 +194,19 @@ public class Robot extends IterativeRobot implements PIDOutput {
         /*} catch( RuntimeException ex ) {
             DriverStation.reportError("Error communicating with drive system:  " + ex.getMessage(), true);
         }*/
+		
+		double lift_speed = SmartDashboard.getNumber("Lift", 0.5);
+		
+		if (stick.getRawButton(5)) {
+			Parts.lift_1.set(lift_speed);
+			Parts.lift_2.set(lift_speed);
+		} else if (stick.getRawButton(6)) {
+			Parts.lift_1.set(-lift_speed);
+			Parts.lift_2.set(-lift_speed);
+		} else {
+			Parts.lift_1.set(0.0);
+			Parts.lift_2.set(0.0);
+		}
 		
 		if (stick.getRawButton(1)) {
 			gear_switch.set(Value.kForward);
