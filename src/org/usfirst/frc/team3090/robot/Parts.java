@@ -18,4 +18,11 @@ public class Parts {
 	
 	public static final CANTalon lift_1 = new CANTalon(L1);
 	public static final CANTalon lift_2 = new CANTalon(L2);
+	
+	public static void init() {
+		back_left.setInverted(true);
+		front_left.setInverted(true);
+		back_right.setInverted(true);
+		front_right.setInverted(true);
+	}
 }
