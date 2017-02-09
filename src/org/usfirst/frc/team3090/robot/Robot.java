@@ -229,35 +229,6 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 	@Override
 	public void teleopPeriodic() {
-		/*
-		 * boolean rotateToAngle = false;
-		 * 
-		 * myRobot.setSafetyEnabled(true);
-		 * 
-		 * // stick) if (stick.getRawButton(2)) { pidController.setSetpoint(0);
-		 * rotateToAngle = true; }
-		 * 
-		 * double currentRotationRate; if ( rotateToAngle ) {
-		 * pidController.enable(); currentRotationRate = rotateToAngleRate; }
-		 * else { pidController.disable(); currentRotationRate =
-		 * stick.getTwist(); }
-		 * 
-		 * try { /* Use the joystick X axis for lateral movement,
-		 */
-		/* Y axis for forward movement, and the current */
-		/* calculated rotation rate (or joystick Z axis), */
-		/* depending upon whether "rotate to angle" is active. */
-
-		// myRobot.arcadeDrive(-stick.getY(), currentRotationRate); // drive
-		// with arcade style (use right
-
-		// myRobot.mecanumDrive_Cartesian(stick.getX(), stick.getY(),
-		// currentRotationRate, ahrs.getAngle());
-		/*
-		 * } catch( RuntimeException ex ) {
-		 * DriverStation.reportError("Error communicating with drive system:  "
-		 * + ex.getMessage(), true); }
-		 */
 
 		double lift_speed = SmartDashboard.getNumber("Lift", 0.5);
 
