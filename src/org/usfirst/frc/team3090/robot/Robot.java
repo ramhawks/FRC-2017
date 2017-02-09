@@ -30,50 +30,29 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	final String defaultAuto = "Default";
 	final String customAuto = "My Auto";
 	SendableChooser<String> chooser = new SendableChooser<>();
-	
+
 	AHRS ahrs;
 	PIDController pidController;
-	
+
 	static final double kP = 0.03;
 	static final double kI = 0.00;
 	static final double kD = 0.00;
 	static final double kF = 0.00;
-	
+
 	static final double kToleranceDegrees = 2.0f;
-	
+
 	double rotateToAngleRate;
-		
+
 	AnalogInput sonar;
 	AnalogInput sonarAlso;
-	
+
 	Solenoid ourTestSolenoid;
-	
+
 	public boolean soleState;
-	
+
 	volatile Thread vision_thread;
 
 	DoubleSolenoid gear_switch;
-	
-	public Robot() {
-		myRobot.setExpiration(0.1);
-		
-		try {
-			ahrs = new AHRS(I2C.Port.kMXP);
-		} catch (RuntimeException ex) {
-			// TODO Auto-generated catch block
-			DriverStation.reportError("Error instantiating navX-MXP:  " + ex.getMessage(), true);
-		}
-		pidController = new PIDController(kP, kI, kD, ahrs, this);
-		
-		pidController.setInputRange(-180.0f,  180.0f);
-	    pidController.setOutputRange(-1.0, 1.0);
-	    pidController.setAbsoluteTolerance(kToleranceDegrees);
-	    pidController.setContinuous(true);
-	    
-	    LiveWindow.addActuator("DriveSystem", "Rotate Controller", pidController);
-	    
-	    ourTestSolenoid = new Solenoid(1);
-	}
 
 	@Override
 	public void robotInit() {
@@ -96,7 +75,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 			// deploying.
 			while (!Thread.interrupted()) {
 				// Tell the CvSink to grab a frame from the camera and put it
-				// in the source mat.  If there is an error notify the output.
+				// in the source mat. If there is an error notify the output.
 				if (cvSink.grabFrame(mat) == 0) {
 					// Send the output the error.
 					outputStream.notifyError(cvSink.getError());
@@ -104,28 +83,49 @@ public class Robot extends IterativeRobot implements PIDOutput {
 					continue;
 				}
 				// Put a rectangle on the image
-				/*Imgproc.rectangle(mat, new Point(100, 100), new Point(400, 400),
-						new Scalar(255, 255, 255), 5);*/
+				/*
+				 * Imgproc.rectangle(mat, new Point(100, 100), new Point(400,
+				 * 400), new Scalar(255, 255, 255), 5);
+				 */
 				// Give the output stream a new image to display
 				outputStream.putFrame(mat);
 			}
 		});
 		vision_thread.setDaemon(true);
 		vision_thread.start();
-				
-		//myRobot.setInvertedMotor(MotorType.kFrontRight, true);
-		//myRobot.setInvertedMotor(MotorType.kRearRight, true);
-		
+
+		// myRobot.setInvertedMotor(MotorType.kFrontRight, true);
+		// myRobot.setInvertedMotor(MotorType.kRearRight, true);
+
 		chooser.addDefault("Default Auto", defaultAuto);
 		chooser.addObject("My Auto", customAuto);
 		SmartDashboard.putData("Auto modes", chooser);
-		
+
 		sonar = new AnalogInput(5);
 		sonarAlso = new AnalogInput(0);
-		
+
 		gear_switch = new DoubleSolenoid(1, 0, 1);
-		
+
 		SmartDashboard.putNumber("Lift", 0.5);
+
+		myRobot.setExpiration(0.1);
+
+		try {
+			ahrs = new AHRS(I2C.Port.kMXP);
+		} catch (RuntimeException ex) {
+			// TODO Auto-generated catch block
+			DriverStation.reportError("Error instantiating navX-MXP:  " + ex.getMessage(), true);
+		}
+		pidController = new PIDController(kP, kI, kD, ahrs, this);
+
+		pidController.setInputRange(-180.0f, 180.0f);
+		pidController.setOutputRange(-1.0, 1.0);
+		pidController.setAbsoluteTolerance(kToleranceDegrees);
+		pidController.setContinuous(true);
+
+		LiveWindow.addActuator("DriveSystem", "Rotate Controller", pidController);
+
+		ourTestSolenoid = new Solenoid(1);
 	}
 
 	@Override
@@ -150,7 +150,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 			myRobot.drive(0.0, 0.0); // stop robot
 			break;
 		}
-	}	
+	}
 
 	@Override
 	public void autonomousPeriodic() {
@@ -159,44 +159,41 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	@Override
 	public void teleopInit() {
 	}
-	
+
 	@Override
 	public void teleopPeriodic() {
-		/*boolean rotateToAngle = false;
-		
-		myRobot.setSafetyEnabled(true);
+		/*
+		 * boolean rotateToAngle = false;
+		 * 
+		 * myRobot.setSafetyEnabled(true);
+		 * 
+		 * // stick) if (stick.getRawButton(2)) { pidController.setSetpoint(0);
+		 * rotateToAngle = true; }
+		 * 
+		 * double currentRotationRate; if ( rotateToAngle ) {
+		 * pidController.enable(); currentRotationRate = rotateToAngleRate; }
+		 * else { pidController.disable(); currentRotationRate =
+		 * stick.getTwist(); }
+		 * 
+		 * try { /* Use the joystick X axis for lateral movement,
+		 */
+		/* Y axis for forward movement, and the current */
+		/* calculated rotation rate (or joystick Z axis), */
+		/* depending upon whether "rotate to angle" is active. */
 
-										// stick)				
-		if (stick.getRawButton(2)) {
-			pidController.setSetpoint(0);
-			rotateToAngle = true;
-		}
-		
-		double currentRotationRate;
-        if ( rotateToAngle ) {
-            pidController.enable();
-            currentRotationRate = rotateToAngleRate;
-        } else {
-            pidController.disable();
-            currentRotationRate = stick.getTwist();
-        }
-        
-        try {
-            /* Use the joystick X axis for lateral movement,          */
-            /* Y axis for forward movement, and the current           */
-            /* calculated rotation rate (or joystick Z axis),         */
-            /* depending upon whether "rotate to angle" is active.    */
-        	
-    		//myRobot.arcadeDrive(-stick.getY(), currentRotationRate); // drive with arcade style (use right
-        	
-            //myRobot.mecanumDrive_Cartesian(stick.getX(), stick.getY(), 
-                                           //currentRotationRate, ahrs.getAngle());
-        /*} catch( RuntimeException ex ) {
-            DriverStation.reportError("Error communicating with drive system:  " + ex.getMessage(), true);
-        }*/
-		
+		// myRobot.arcadeDrive(-stick.getY(), currentRotationRate); // drive
+		// with arcade style (use right
+
+		// myRobot.mecanumDrive_Cartesian(stick.getX(), stick.getY(),
+		// currentRotationRate, ahrs.getAngle());
+		/*
+		 * } catch( RuntimeException ex ) {
+		 * DriverStation.reportError("Error communicating with drive system:  "
+		 * + ex.getMessage(), true); }
+		 */
+
 		double lift_speed = SmartDashboard.getNumber("Lift", 0.5);
-		
+
 		if (stick.getRawButton(5)) {
 			Parts.lift_1.set(lift_speed);
 			Parts.lift_2.set(lift_speed);
@@ -207,7 +204,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 			Parts.lift_1.set(0.0);
 			Parts.lift_2.set(0.0);
 		}
-		
+
 		if (stick.getRawButton(1)) {
 			gear_switch.set(Value.kForward);
 		} else if (stick.getRawButton(4)) {
@@ -215,41 +212,41 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		} else if (stick.getRawButton(3)) {
 			gear_switch.set(Value.kOff);
 		}
-    	
-    	myRobot.arcadeDrive(stick, true);
-    	
-    	SmartDashboard.putNumber("Value", sonar.getValue());
-    	SmartDashboard.putNumber("Voltage", sonar.getVoltage());
-    	SmartDashboard.putNumber("Average Value", sonar.getAverageValue());
-    	SmartDashboard.putNumber("Average Voltage", sonar.getAverageVoltage());
-    	
-    	SmartDashboard.putNumber("ValueA", sonarAlso.getValue());
-    	SmartDashboard.putNumber("VoltageA", sonarAlso.getVoltage());
-    	SmartDashboard.putNumber("Average ValueA", sonarAlso.getAverageValue());
-    	SmartDashboard.putNumber("Average VoltageA", sonarAlso.getAverageVoltage());
-    
-    	SmartDashboard.putNumber("Value Inches", sonar.getValue() / 0.0098);
-    	SmartDashboard.putNumber("Voltage Inches", sonar.getVoltage() / 0.0098);
-    	SmartDashboard.putNumber("Average Value Inches", sonar.getAverageValue() / 0.0098);
-    	SmartDashboard.putNumber("Average Voltage Inches", sonar.getAverageVoltage() / 0.0098);
-    	
-    	SmartDashboard.putNumber("ValueA mm", sonarAlso.getValue() / 0.000977);
-    	SmartDashboard.putNumber("VoltageA mm", sonarAlso.getVoltage() / 0.000977);
-    	SmartDashboard.putNumber("Average ValueA mm", sonarAlso.getAverageValue() / 0.000977);
-    	SmartDashboard.putNumber("Average VoltageA mm", sonarAlso.getAverageVoltage() / 0.000977);
-    	
-    	if (stick.getRawButton(4) == true){
-    		soleState = true;
-    	} 
-    	if (stick.getRawButton(1) == true){
-    		soleState = false;
-    	}
-    	ourTestSolenoid.set(soleState);
-    	
-        Timer.delay(0.005);	
+
+		myRobot.arcadeDrive(stick, true);
+
+		SmartDashboard.putNumber("Value", sonar.getValue());
+		SmartDashboard.putNumber("Voltage", sonar.getVoltage());
+		SmartDashboard.putNumber("Average Value", sonar.getAverageValue());
+		SmartDashboard.putNumber("Average Voltage", sonar.getAverageVoltage());
+
+		SmartDashboard.putNumber("ValueA", sonarAlso.getValue());
+		SmartDashboard.putNumber("VoltageA", sonarAlso.getVoltage());
+		SmartDashboard.putNumber("Average ValueA", sonarAlso.getAverageValue());
+		SmartDashboard.putNumber("Average VoltageA", sonarAlso.getAverageVoltage());
+
+		SmartDashboard.putNumber("Value Inches", sonar.getValue() / 0.0098);
+		SmartDashboard.putNumber("Voltage Inches", sonar.getVoltage() / 0.0098);
+		SmartDashboard.putNumber("Average Value Inches", sonar.getAverageValue() / 0.0098);
+		SmartDashboard.putNumber("Average Voltage Inches", sonar.getAverageVoltage() / 0.0098);
+
+		SmartDashboard.putNumber("ValueA mm", sonarAlso.getValue() / 0.000977);
+		SmartDashboard.putNumber("VoltageA mm", sonarAlso.getVoltage() / 0.000977);
+		SmartDashboard.putNumber("Average ValueA mm", sonarAlso.getAverageValue() / 0.000977);
+		SmartDashboard.putNumber("Average VoltageA mm", sonarAlso.getAverageVoltage() / 0.000977);
+
+		if (stick.getRawButton(4) == true) {
+			soleState = true;
+		}
+		if (stick.getRawButton(1) == true) {
+			soleState = false;
+		}
+		ourTestSolenoid.set(soleState);
+
+		Timer.delay(0.005);
 
 	}
-	
+
 	@Override
 	public void testInit() {
 	}
@@ -260,6 +257,6 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 	@Override
 	public void pidWrite(double output) {
-		
+
 	}
 }
