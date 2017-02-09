@@ -25,10 +25,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends IterativeRobot implements PIDOutput {
-	RobotDrive myRobot = new RobotDrive(Parts.back_left, Parts.front_left, Parts.back_right, Parts.front_right);
-	Joystick stick = new Joystick(0);
+	RobotDrive myRobot;
+	Joystick stick;
 	final String defaultAuto = "Default";
 	final String customAuto = "My Auto";
+	final String pathAuto = "Path";
+	private boolean path = false;
 	SendableChooser<String> chooser = new SendableChooser<>();
 
 	AHRS ahrs;
@@ -56,6 +58,11 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 	@Override
 	public void robotInit() {
+		Parts.init();
+		
+		myRobot = new RobotDrive(Parts.back_left, Parts.front_left, Parts.back_right, Parts.front_right);
+		stick = new Joystick(0);
+
 		vision_thread = new Thread(() -> {
 			// Get the Axis camera from CameraServer
 			AxisCamera camera = CameraServer.getInstance().addAxisCamera("axis-camera.local");
@@ -99,6 +106,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 		chooser.addDefault("Default Auto", defaultAuto);
 		chooser.addObject("My Auto", customAuto);
+		chooser.addObject("Path", pathAuto);
 		SmartDashboard.putData("Auto modes", chooser);
 
 		sonar = new AnalogInput(5);
@@ -136,6 +144,9 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		System.out.println("Auto selected: " + autoSelected);
 
 		switch (autoSelected) {
+		case pathAuto:
+			path = true;
+			break;
 		case customAuto:
 			myRobot.setSafetyEnabled(false);
 			myRobot.drive(-0.5, 1.0); // spin at half speed
@@ -152,8 +163,64 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		}
 	}
 
+	int index = 0;
+
 	@Override
 	public void autonomousPeriodic() {
+
+		if (path) {
+			
+			Step step = Path.FIRST.steps[index];
+
+			if (step instanceof Distance) {
+
+				Distance d = (Distance) step;
+
+				if (-ahrs.getDisplacementY() >= d.inches) {
+
+					myRobot.drive(0, 0);
+
+					index++;
+
+					ahrs.reset();
+
+				} else {
+
+					myRobot.drive(1, 0);
+
+				}
+
+			} else if (step instanceof Rotation) {
+
+				Rotation r = (Rotation) step;
+
+				pidController.setSetpoint(r.angle);
+				pidController.enable();
+
+				if (r.init)
+					if (pidController.get() != 0) {
+
+						myRobot.drive(0, rotateToAngleRate);
+
+					} else {
+
+						index++;
+
+						ahrs.reset();
+
+						myRobot.drive(0, 0);
+
+					}
+
+			}
+
+			if (!step.init)
+				step.init = true;
+			
+			if (index >= Path.FIRST.steps.length)
+				path = false;
+		}
+
 	}
 
 	@Override
@@ -257,6 +324,6 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 	@Override
 	public void pidWrite(double output) {
-
+		rotateToAngleRate = output;
 	}
 }
