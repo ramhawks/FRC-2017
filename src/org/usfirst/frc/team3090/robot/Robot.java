@@ -27,8 +27,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Robot extends IterativeRobot implements PIDOutput {
 	RobotDrive myRobot;
 	Joystick stick;
-	final String defaultAuto = "Default";
-	final String customAuto = "My Auto";
 
 	private Path chosen_path;
 	private boolean path = false;
@@ -103,9 +101,6 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		vision_thread.setDaemon(true);
 		vision_thread.start();
 
-		chooser.addDefault("Default Auto", defaultAuto);
-		chooser.addObject("My Auto", customAuto);
-		
 		for (Path p : Path.values()) {
 			chooser.addObject(p.name, p.name);
 		}
@@ -151,23 +146,6 @@ public class Robot extends IterativeRobot implements PIDOutput {
 				path = true;
 				break;
 			}
-		}
-		if (path) return;
-		
-		switch (autoSelected) {
-		case customAuto:
-			myRobot.setSafetyEnabled(false);
-			myRobot.drive(-0.5, 1.0); // spin at half speed
-			Timer.delay(2.0); // for 2 seconds
-			myRobot.drive(0.0, 0.0); // stop robot
-			break;
-		case defaultAuto:
-		default:
-			myRobot.setSafetyEnabled(false);
-			myRobot.drive(-0.5, 0.0); // drive forwards half speed
-			Timer.delay(2.0); // for 2 seconds
-			myRobot.drive(0.0, 0.0); // stop robot
-			break;
 		}
 	}
 
