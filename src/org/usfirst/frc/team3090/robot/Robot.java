@@ -29,8 +29,10 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	Joystick stick;
 	final String defaultAuto = "Default";
 	final String customAuto = "My Auto";
-	final String pathAuto = "Path";
+
+	private Path chosen_path;
 	private boolean path = false;
+
 	SendableChooser<String> chooser = new SendableChooser<>();
 
 	AHRS ahrs;
@@ -59,7 +61,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	@Override
 	public void robotInit() {
 		Parts.init();
-		
+
 		myRobot = new RobotDrive(Parts.back_left, Parts.front_left, Parts.back_right, Parts.front_right);
 		stick = new Joystick(0);
 
@@ -101,12 +103,13 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		vision_thread.setDaemon(true);
 		vision_thread.start();
 
-		// myRobot.setInvertedMotor(MotorType.kFrontRight, true);
-		// myRobot.setInvertedMotor(MotorType.kRearRight, true);
-
 		chooser.addDefault("Default Auto", defaultAuto);
 		chooser.addObject("My Auto", customAuto);
-		chooser.addObject("Path", pathAuto);
+		
+		for (Path p : Path.values()) {
+			chooser.addObject(p.name, p.name);
+		}
+		
 		SmartDashboard.putData("Auto modes", chooser);
 
 		sonar = new AnalogInput(5);
@@ -121,7 +124,6 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		try {
 			ahrs = new AHRS(I2C.Port.kMXP);
 		} catch (RuntimeException ex) {
-			// TODO Auto-generated catch block
 			DriverStation.reportError("Error instantiating navX-MXP:  " + ex.getMessage(), true);
 		}
 		pidController = new PIDController(kP, kI, kD, ahrs, this);
@@ -143,10 +145,16 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		// defaultAuto);
 		System.out.println("Auto selected: " + autoSelected);
 
+		for (Path p : Path.values()) {
+			if (p.name.equals(autoSelected)) {
+				chosen_path = p;
+				path = true;
+				break;
+			}
+		}
+		if (path) return;
+		
 		switch (autoSelected) {
-		case pathAuto:
-			path = true;
-			break;
 		case customAuto:
 			myRobot.setSafetyEnabled(false);
 			myRobot.drive(-0.5, 1.0); // spin at half speed
@@ -169,8 +177,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	public void autonomousPeriodic() {
 
 		if (path) {
-			
-			Step step = Path.FIRST.steps[index];
+
+			Step step = chosen_path.steps[index];
 
 			if (step instanceof Distance) {
 
@@ -216,8 +224,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 			if (!step.init)
 				step.init = true;
-			
-			if (index >= Path.FIRST.steps.length)
+
+			if (index >= chosen_path.steps.length)
 				path = false;
 		}
 
