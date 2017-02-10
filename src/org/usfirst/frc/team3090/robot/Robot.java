@@ -31,15 +31,15 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	private Path chosen_path;
 	private boolean path = false;
 
-	SendableChooser<String> chooser = new SendableChooser<>();
+	SendableChooser<String> chooser;
 
 	AHRS ahrs;
 	PIDController pidController;
 
-	static final double kP = 0.03;
-	static final double kI = 0.00;
-	static final double kD = 0.00;
-	static final double kF = 0.00;
+	private static final double kP = 0.03;
+	private static final double kI = 0.00;
+	private static final double kD = 0.00;
+	protected static final double kF = 0.00;
 
 	static final double kToleranceDegrees = 2.0f;
 
@@ -101,6 +101,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		vision_thread.setDaemon(true);
 		vision_thread.start();
 
+		chooser = new SendableChooser<>();
 		for (Path p : Path.values()) {
 			chooser.addObject(p.name, p.name);
 		}
@@ -147,9 +148,11 @@ public class Robot extends IterativeRobot implements PIDOutput {
 				break;
 			}
 		}
+		
+		index = 0;
 	}
 
-	int index = 0;
+	int index;
 
 	@Override
 	public void autonomousPeriodic() {
