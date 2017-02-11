@@ -7,7 +7,6 @@ import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.cscore.AxisCamera;
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.CvSource;
-import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
@@ -18,7 +17,6 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.RobotDrive;
-import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -47,16 +45,16 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 	double rotateToAngleRate;
 
-	AnalogInput sonar;
-	AnalogInput sonarAlso;
+	/*
+	 * AnalogInput sonar; AnalogInput sonarAlso;
+	 */
 
-	Solenoid ourTestSolenoid;
-
-	public boolean soleState;
+	private boolean switching_gears;
+	private long last_time;
+	private DoubleSolenoid gear_switch;
+	private boolean is_gear_fast;
 
 	volatile Thread vision_thread;
-
-	DoubleSolenoid gear_switch;
 
 	@Override
 	public void robotInit() {
@@ -111,10 +109,9 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 		SmartDashboard.putData("Auto modes", chooser);
 
-		sonar = new AnalogInput(5);
-		sonarAlso = new AnalogInput(0);
-
-		gear_switch = new DoubleSolenoid(1, 0, 1);
+		/*
+		 * sonar = new AnalogInput(5); sonarAlso = new AnalogInput(0);
+		 */
 
 		putNumber("Lift", 0.5);
 
@@ -134,7 +131,10 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 		LiveWindow.addActuator("DriveSystem", "Rotate Controller", pidController);
 
-		ourTestSolenoid = new Solenoid(1);
+		switching_gears = false;
+		last_time = -1;
+		gear_switch = new DoubleSolenoid(1, 0, 1);
+		is_gear_fast = false;
 	}
 
 	@Override
@@ -235,54 +235,77 @@ public class Robot extends IterativeRobot implements PIDOutput {
 			Parts.lift_2.set(0.0);
 		}
 
-		if (stick.getRawButton(1)) {
-			gear_switch.set(Value.kForward);
-		} else if (stick.getRawButton(4)) {
-			gear_switch.set(Value.kReverse);
-		} else if (stick.getRawButton(3)) {
+		// Y toggles gears
+		if (stick.getRawButton(4)) {
+			if (is_gear_fast)
+				is_gear_fast = false;
+			else
+				is_gear_fast = true;
+
+			switching_gears = true;
+		}
+
+		if (switching_gears) {
+
+			if (last_time < 0) {
+				last_time = System.currentTimeMillis();
+			} else {
+				if (System.currentTimeMillis() - last_time >= 500) {
+					switching_gears = false;
+					last_time = -1;
+				} else {
+
+					if (is_gear_fast) {
+						gear_switch.set(Value.kForward);
+					} else {
+						gear_switch.set(Value.kReverse);
+					}
+
+				}
+			}
+
+		} else {
 			gear_switch.set(Value.kOff);
 		}
 
-		myRobot.arcadeDrive(stick.getRawAxis(1), stick.getRawAxis(4));
+		if (!switching_gears)
+			myRobot.arcadeDrive(stick.getRawAxis(1), stick.getRawAxis(4));
 
-		putNumber("stick.y", stick.getY());
-		putNumber("stick.x", stick.getX());
-		putNumber("stick.y", stick.getY());
-		putNumber("stick.y", stick.getY());
-		putNumber("stick.y", stick.getY());
-		putNumber("stick.y", stick.getY());
-		putNumber("stick.y", stick.getY());
-		putNumber("stick.y", stick.getY());
-		putNumber("stick.y", stick.getY());
-		putNumber("stick.y", stick.getY());
-		
-		/*putNumber("Value", sonar.getValue());
-		putNumber("Voltage", sonar.getVoltage());
-		putNumber("Average Value", sonar.getAverageValue());
-		putNumber("Average Voltage", sonar.getAverageVoltage());
+		putNumber("axis.left.x", stick.getX());
+		putNumber("axis.left.y", stick.getY());
+		putBoolean("button.a", stick.getRawButton(1));
+		putBoolean("button.b", stick.getRawButton(2));
+		putBoolean("button.x", stick.getRawButton(3));
+		putBoolean("button.y", stick.getRawButton(4));
+		putBoolean("button.lb", stick.getRawButton(5));
+		putBoolean("button.rb", stick.getRawButton(6));
+		putBoolean("button.back", stick.getRawButton(7));
+		putBoolean("button.start", stick.getRawButton(8));
+		putBoolean("button.left_stick", stick.getRawButton(9));
 
-		putNumber("ValueA", sonarAlso.getValue());
-		putNumber("VoltageA", sonarAlso.getVoltage());
-		putNumber("Average ValueA", sonarAlso.getAverageValue());
-		putNumber("Average VoltageA", sonarAlso.getAverageVoltage());
-
-		putNumber("Value Inches", sonar.getValue() / 0.0098);
-		putNumber("Voltage Inches", sonar.getVoltage() / 0.0098);
-		putNumber("Average Value Inches", sonar.getAverageValue() / 0.0098);
-		putNumber("Average Voltage Inches", sonar.getAverageVoltage() / 0.0098);
-
-		putNumber("ValueA mm", sonarAlso.getValue() / 0.000977);
-		putNumber("VoltageA mm", sonarAlso.getVoltage() / 0.000977);
-		putNumber("Average ValueA mm", sonarAlso.getAverageValue() / 0.000977);
-		putNumber("Average VoltageA mm", sonarAlso.getAverageVoltage() / 0.000977);*/
-
-		if (stick.getRawButton(4) == true) {
-			soleState = true;
-		}
-		if (stick.getRawButton(1) == true) {
-			soleState = false;
-		}
-		ourTestSolenoid.set(soleState);
+		/*
+		 * putNumber("Value", sonar.getValue()); putNumber("Voltage",
+		 * sonar.getVoltage()); putNumber("Average Value",
+		 * sonar.getAverageValue()); putNumber("Average Voltage",
+		 * sonar.getAverageVoltage());
+		 * 
+		 * putNumber("ValueA", sonarAlso.getValue()); putNumber("VoltageA",
+		 * sonarAlso.getVoltage()); putNumber("Average ValueA",
+		 * sonarAlso.getAverageValue()); putNumber("Average VoltageA",
+		 * sonarAlso.getAverageVoltage());
+		 * 
+		 * putNumber("Value Inches", sonar.getValue() / 0.0098);
+		 * putNumber("Voltage Inches", sonar.getVoltage() / 0.0098);
+		 * putNumber("Average Value Inches", sonar.getAverageValue() / 0.0098);
+		 * putNumber("Average Voltage Inches", sonar.getAverageVoltage() /
+		 * 0.0098);
+		 * 
+		 * putNumber("ValueA mm", sonarAlso.getValue() / 0.000977);
+		 * putNumber("VoltageA mm", sonarAlso.getVoltage() / 0.000977);
+		 * putNumber("Average ValueA mm", sonarAlso.getAverageValue() /
+		 * 0.000977); putNumber("Average VoltageA mm",
+		 * sonarAlso.getAverageVoltage() / 0.000977);
+		 */
 
 		Timer.delay(0.005);
 	}
@@ -290,6 +313,11 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	public static void putNumber(String key, double value) {
 		if (debugging)
 			SmartDashboard.putNumber(key, value);
+	}
+
+	public static void putBoolean(String key, boolean value) {
+		if (debugging)
+			SmartDashboard.putBoolean(key, value);
 	}
 
 	@Override
