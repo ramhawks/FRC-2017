@@ -25,6 +25,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends IterativeRobot implements PIDOutput {
+	public static boolean debugging;
+
 	RobotDrive myRobot;
 	Joystick stick;
 
@@ -58,6 +60,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 	@Override
 	public void robotInit() {
+		debugging = false;
+
 		Parts.init();
 
 		myRobot = new RobotDrive(Parts.back_left, Parts.front_left, Parts.back_right, Parts.front_right);
@@ -112,7 +116,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 		gear_switch = new DoubleSolenoid(1, 0, 1);
 
-		SmartDashboard.putNumber("Lift", 0.5);
+		putNumber("Lift", 0.5);
 
 		myRobot.setExpiration(0.1);
 
@@ -241,25 +245,36 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 		myRobot.arcadeDrive(stick.getRawAxis(1), stick.getRawAxis(4));
 
-		SmartDashboard.putNumber("Value", sonar.getValue());
-		SmartDashboard.putNumber("Voltage", sonar.getVoltage());
-		SmartDashboard.putNumber("Average Value", sonar.getAverageValue());
-		SmartDashboard.putNumber("Average Voltage", sonar.getAverageVoltage());
+		putNumber("stick.y", stick.getY());
+		putNumber("stick.x", stick.getX());
+		putNumber("stick.y", stick.getY());
+		putNumber("stick.y", stick.getY());
+		putNumber("stick.y", stick.getY());
+		putNumber("stick.y", stick.getY());
+		putNumber("stick.y", stick.getY());
+		putNumber("stick.y", stick.getY());
+		putNumber("stick.y", stick.getY());
+		putNumber("stick.y", stick.getY());
+		
+		/*putNumber("Value", sonar.getValue());
+		putNumber("Voltage", sonar.getVoltage());
+		putNumber("Average Value", sonar.getAverageValue());
+		putNumber("Average Voltage", sonar.getAverageVoltage());
 
-		SmartDashboard.putNumber("ValueA", sonarAlso.getValue());
-		SmartDashboard.putNumber("VoltageA", sonarAlso.getVoltage());
-		SmartDashboard.putNumber("Average ValueA", sonarAlso.getAverageValue());
-		SmartDashboard.putNumber("Average VoltageA", sonarAlso.getAverageVoltage());
+		putNumber("ValueA", sonarAlso.getValue());
+		putNumber("VoltageA", sonarAlso.getVoltage());
+		putNumber("Average ValueA", sonarAlso.getAverageValue());
+		putNumber("Average VoltageA", sonarAlso.getAverageVoltage());
 
-		SmartDashboard.putNumber("Value Inches", sonar.getValue() / 0.0098);
-		SmartDashboard.putNumber("Voltage Inches", sonar.getVoltage() / 0.0098);
-		SmartDashboard.putNumber("Average Value Inches", sonar.getAverageValue() / 0.0098);
-		SmartDashboard.putNumber("Average Voltage Inches", sonar.getAverageVoltage() / 0.0098);
+		putNumber("Value Inches", sonar.getValue() / 0.0098);
+		putNumber("Voltage Inches", sonar.getVoltage() / 0.0098);
+		putNumber("Average Value Inches", sonar.getAverageValue() / 0.0098);
+		putNumber("Average Voltage Inches", sonar.getAverageVoltage() / 0.0098);
 
-		SmartDashboard.putNumber("ValueA mm", sonarAlso.getValue() / 0.000977);
-		SmartDashboard.putNumber("VoltageA mm", sonarAlso.getVoltage() / 0.000977);
-		SmartDashboard.putNumber("Average ValueA mm", sonarAlso.getAverageValue() / 0.000977);
-		SmartDashboard.putNumber("Average VoltageA mm", sonarAlso.getAverageVoltage() / 0.000977);
+		putNumber("ValueA mm", sonarAlso.getValue() / 0.000977);
+		putNumber("VoltageA mm", sonarAlso.getVoltage() / 0.000977);
+		putNumber("Average ValueA mm", sonarAlso.getAverageValue() / 0.000977);
+		putNumber("Average VoltageA mm", sonarAlso.getAverageVoltage() / 0.000977);*/
 
 		if (stick.getRawButton(4) == true) {
 			soleState = true;
@@ -270,6 +285,11 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		ourTestSolenoid.set(soleState);
 
 		Timer.delay(0.005);
+	}
+
+	public static void putNumber(String key, double value) {
+		if (debugging)
+			SmartDashboard.putNumber(key, value);
 	}
 
 	@Override
