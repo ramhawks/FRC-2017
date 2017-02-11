@@ -34,7 +34,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	SendableChooser<String> chooser;
 
 	AHRS ahrs;
-	PIDController pidController;
+	PIDController rotationController;
 
 	private static final double kP = 0.03;
 	private static final double kI = 0.00;
@@ -53,6 +53,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	private long last_time;
 	private DoubleSolenoid gear_switch;
 	private boolean is_gear_fast;
+	private boolean setpoint_changed;
 
 	volatile Thread vision_thread;
 
@@ -122,19 +123,20 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		} catch (RuntimeException ex) {
 			DriverStation.reportError("Error instantiating navX-MXP:  " + ex.getMessage(), true);
 		}
-		pidController = new PIDController(kP, kI, kD, ahrs, this);
+		rotationController = new PIDController(kP, kI, kD, ahrs, this);
 
-		pidController.setInputRange(-180.0f, 180.0f);
-		pidController.setOutputRange(-1.0, 1.0);
-		pidController.setAbsoluteTolerance(kToleranceDegrees);
-		pidController.setContinuous(true);
+		rotationController.setInputRange(-180.0f, 180.0f);
+		rotationController.setOutputRange(-1.0, 1.0);
+		rotationController.setAbsoluteTolerance(kToleranceDegrees);
+		rotationController.setContinuous(true);
 
-		LiveWindow.addActuator("DriveSystem", "Rotate Controller", pidController);
+		LiveWindow.addActuator("DriveSystem", "Rotate Controller", rotationController);
 
 		switching_gears = false;
 		last_time = -1;
 		gear_switch = new DoubleSolenoid(1, 0, 1);
 		is_gear_fast = false;
+		setpoint_changed = false;
 	}
 
 	@Override
@@ -186,11 +188,11 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 				Rotation r = (Rotation) step;
 
-				pidController.setSetpoint(r.angle);
-				pidController.enable();
+				rotationController.setSetpoint(r.angle);
+				rotationController.enable();
 
 				if (r.init)
-					if (pidController.get() != 0) {
+					if (rotationController.get() != 0) {
 
 						myRobot.drive(0, rotateToAngleRate);
 
@@ -217,6 +219,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 	@Override
 	public void teleopInit() {
+		ahrs.reset();
+		rotationController.setSetpoint(0);
 	}
 
 	@Override
@@ -268,8 +272,24 @@ public class Robot extends IterativeRobot implements PIDOutput {
 			gear_switch.set(Value.kOff);
 		}
 
-		if (!switching_gears)
-			myRobot.arcadeDrive(stick.getRawAxis(1), stick.getRawAxis(4));
+		if (stick.getRawAxis(4) == 0) {
+			if (setpoint_changed) {
+				setpoint_changed = false;
+				ahrs.reset();
+				rotationController.setSetpoint(0);
+			}
+
+			rotationController.enable();
+			
+			if (!switching_gears)
+				myRobot.arcadeDrive(stick.getRawAxis(1), rotateToAngleRate);
+			
+		} else {
+			if (!switching_gears) {
+				myRobot.arcadeDrive(stick.getRawAxis(1), stick.getRawAxis(4));
+				setpoint_changed = true;
+			}
+		}			
 
 		putNumber("axis.left.x", stick.getX());
 		putNumber("axis.left.y", stick.getY());
