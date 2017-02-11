@@ -66,7 +66,6 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		vision_thread = new Thread(() -> {
 			// Get the Axis camera from CameraServer
 			AxisCamera camera = CameraServer.getInstance().addAxisCamera("axis-camera.local");
-			// Set the resolution
 			camera.setResolution(640, 480);
 
 			// Get a CvSink. This will capture Mats from the camera
@@ -98,14 +97,14 @@ public class Robot extends IterativeRobot implements PIDOutput {
 				outputStream.putFrame(mat);
 			}
 		});
-		vision_thread.setDaemon(true);
+
 		vision_thread.start();
 
 		chooser = new SendableChooser<>();
 		for (Path p : Path.values()) {
 			chooser.addObject(p.name, p.name);
 		}
-		
+
 		SmartDashboard.putData("Auto modes", chooser);
 
 		sonar = new AnalogInput(5);
@@ -148,7 +147,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 				break;
 			}
 		}
-		
+
 		index = 0;
 	}
 
@@ -240,7 +239,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 			gear_switch.set(Value.kOff);
 		}
 
-		myRobot.arcadeDrive(stick, true);
+		myRobot.arcadeDrive(stick.getRawAxis(1), stick.getRawAxis(4));
 
 		SmartDashboard.putNumber("Value", sonar.getValue());
 		SmartDashboard.putNumber("Voltage", sonar.getVoltage());
@@ -271,7 +270,6 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		ourTestSolenoid.set(soleState);
 
 		Timer.delay(0.005);
-
 	}
 
 	@Override

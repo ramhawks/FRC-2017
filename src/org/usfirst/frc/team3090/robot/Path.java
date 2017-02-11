@@ -1,10 +1,7 @@
 package org.usfirst.frc.team3090.robot;
 
 public enum Path {
-	FIRST("First", 
-			new Distance(24),
-			new Rotation(90),
-			new Distance(24));
+	FIRST("First", new Distance(24), new Rotation(90), new Distance(24));
 
 	public final String name;
 
