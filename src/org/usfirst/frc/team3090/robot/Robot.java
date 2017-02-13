@@ -7,6 +7,7 @@ import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.cscore.AxisCamera;
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.CvSource;
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
@@ -57,6 +58,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 	volatile Thread vision_thread;
 
+	AnalogInput pressure_sensor;
+	
 	@Override
 	public void robotInit() {
 		debugging = false;
@@ -137,6 +140,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		gear_switch = new DoubleSolenoid(1, 0, 1);
 		is_gear_fast = false;
 		setpoint_changed = false;
+		
+		pressure_sensor = new AnalogInput(1);
 	}
 
 	@Override
@@ -272,7 +277,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 			gear_switch.set(Value.kOff);
 		}
 
-		if (stick.getRawAxis(4) == 0) {
+		if (Math.abs(stick.getRawAxis(4)) < 0.1) {
 			if (setpoint_changed) {
 				setpoint_changed = false;
 				ahrs.reset();
@@ -285,6 +290,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 				myRobot.arcadeDrive(stick.getRawAxis(1), rotateToAngleRate);
 			
 		} else {
+			rotationController.disable();
+			
 			if (!switching_gears) {
 				myRobot.arcadeDrive(stick.getRawAxis(1), stick.getRawAxis(4));
 				setpoint_changed = true;
@@ -327,6 +334,11 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		 * sonarAlso.getAverageVoltage() / 0.000977);
 		 */
 
+		putNumber("Pressure Sensor Voltage", pressure_sensor.getVoltage());
+		putNumber("Pressure Sensor Value", pressure_sensor.getValue());
+		
+		SmartDashboard.putNumber("PSI", (pressure_sensor.getVoltage() - 0.5) / 0.018);
+		
 		Timer.delay(0.005);
 	}
 
