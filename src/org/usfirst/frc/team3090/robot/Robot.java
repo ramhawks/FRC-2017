@@ -123,6 +123,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 			}
 		});
+		psi_thread.start();
 
 		chooser = new SendableChooser<>();
 		for (Path p : Path.values()) {
