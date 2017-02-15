@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDOutput;
+import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
@@ -24,17 +25,17 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends IterativeRobot implements PIDOutput {
-	public static boolean debugging;
+	public volatile static boolean debugging;
 
 	RobotDrive myRobot;
-	Joystick stick;
+	volatile Joystick stick;
 
 	private Path chosen_path;
 	private boolean path = false;
 
 	SendableChooser<String> chooser;
 
-	AHRS ahrs;
+	volatile AHRS ahrs;
 	PIDController rotationController;
 
 	private static final double kP = 0.03;
@@ -58,13 +59,13 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 	volatile Thread vision_thread;
 
-	volatile Thread psi_thread;
+	volatile Thread smart_dashboard_info;
 
 	volatile AnalogInput pressure_sensor;
 
 	@Override
 	public void robotInit() {
-		debugging = false;
+		debugging = Preferences.getInstance().getBoolean("Debug", false);
 
 		Parts.init();
 
@@ -111,19 +112,44 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 		// vision_thread.start();
 
-		psi_thread = new Thread(() -> {
+		smart_dashboard_info = new Thread(() -> {
 			pressure_sensor = new AnalogInput(1);
 
 			while (!Thread.interrupted()) {
 
 				// SmartDashboard.putNumber("PSI", )
-				SmartDashboard.putNumber("PSI", (pressure_sensor.getVoltage() - 0.5) / 0.018);
+				/*SmartDashboard.putNumber("PSI", (pressure_sensor.getVoltage() - 0.5) / 0.018);
 				putNumber("Pressure Sensor Voltage", pressure_sensor.getVoltage());
 				putNumber("Pressure Sensor Value", pressure_sensor.getValue());
 
+				debugging = Preferences.getInstance().getBoolean("Debug", false);
+
+				putNumber("axis.left.x", stick.getX());
+				putNumber("axis.left.y", stick.getY());
+				putBoolean("button.a", stick.getRawButton(1));
+				putBoolean("button.b", stick.getRawButton(2));
+				putBoolean("button.x", stick.getRawButton(3));
+				putBoolean("button.y", stick.getRawButton(4));
+				putBoolean("button.lb", stick.getRawButton(5));
+				putBoolean("button.rb", stick.getRawButton(6));
+				putBoolean("button.back", stick.getRawButton(7));
+				putBoolean("button.start", stick.getRawButton(8));
+				putBoolean("button.left_stick", stick.getRawButton(9));
+
+				putNumber("ahrs.dX", ahrs.getDisplacementX());
+				putNumber("ahrs.dY", ahrs.getDisplacementY());
+				putNumber("ahrs.dZ", ahrs.getDisplacementZ());
+				putNumber("ahrs.angle", ahrs.getAngle());*/
+				
+				try {
+					Thread.sleep(10);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				
 			}
 		});
-		psi_thread.start();
+		smart_dashboard_info.start();
 
 		chooser = new SendableChooser<>();
 		for (Path p : Path.values()) {
@@ -148,7 +174,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		rotationController = new PIDController(kP, kI, kD, ahrs, this);
 
 		rotationController.setInputRange(-180.0f, 180.0f);
-		rotationController.setOutputRange(-1.0, 1.0);
+		rotationController.setOutputRange(-0.5, 0.5);
 		rotationController.setAbsoluteTolerance(kToleranceDegrees);
 		rotationController.setContinuous(true);
 
@@ -178,6 +204,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		}
 
 		index = 0;
+		ahrs.reset();
+		ahrs.resetDisplacement();
 	}
 
 	int index;
@@ -193,7 +221,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 				Distance d = (Distance) step;
 
-				if (-ahrs.getDisplacementY() >= d.inches) {
+				if (Math.abs(ahrs.getDisplacementY()) >= d.meters) {
 
 					myRobot.drive(0, 0);
 
@@ -203,7 +231,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 				} else {
 
-					myRobot.drive(1, 0);
+					myRobot.drive(-0.5, 0);
 
 				}
 
@@ -243,13 +271,15 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	@Override
 	public void teleopInit() {
 		ahrs.reset();
+		ahrs.resetDisplacement();
 		rotationController.setSetpoint(0);
 	}
 
 	@Override
 	public void teleopPeriodic() {
 
-		double lift_speed = SmartDashboard.getNumber("Lift", 0.5);
+		// double lift_speed = SmartDashboard.getNumber("Lift", 0.5);
+		double lift_speed = Preferences.getInstance().getDouble("Lift", 0.5);
 
 		if (stick.getRawButton(5)) {
 			Parts.lift_1.set(lift_speed);
@@ -316,6 +346,12 @@ public class Robot extends IterativeRobot implements PIDOutput {
 			}
 		}
 
+		SmartDashboard.putNumber("PSI", (pressure_sensor.getVoltage() - 0.5) / 0.018);
+		putNumber("Pressure Sensor Voltage", pressure_sensor.getVoltage());
+		putNumber("Pressure Sensor Value", pressure_sensor.getValue());
+
+		debugging = Preferences.getInstance().getBoolean("Debug", false);
+
 		putNumber("axis.left.x", stick.getX());
 		putNumber("axis.left.y", stick.getY());
 		putBoolean("button.a", stick.getRawButton(1));
@@ -328,41 +364,26 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		putBoolean("button.start", stick.getRawButton(8));
 		putBoolean("button.left_stick", stick.getRawButton(9));
 
-		/*
-		 * putNumber("Value", sonar.getValue()); putNumber("Voltage",
-		 * sonar.getVoltage()); putNumber("Average Value",
-		 * sonar.getAverageValue()); putNumber("Average Voltage",
-		 * sonar.getAverageVoltage());
-		 * 
-		 * putNumber("ValueA", sonarAlso.getValue()); putNumber("VoltageA",
-		 * sonarAlso.getVoltage()); putNumber("Average ValueA",
-		 * sonarAlso.getAverageValue()); putNumber("Average VoltageA",
-		 * sonarAlso.getAverageVoltage());
-		 * 
-		 * putNumber("Value Inches", sonar.getValue() / 0.0098);
-		 * putNumber("Voltage Inches", sonar.getVoltage() / 0.0098);
-		 * putNumber("Average Value Inches", sonar.getAverageValue() / 0.0098);
-		 * putNumber("Average Voltage Inches", sonar.getAverageVoltage() /
-		 * 0.0098);
-		 * 
-		 * putNumber("ValueA mm", sonarAlso.getValue() / 0.000977);
-		 * putNumber("VoltageA mm", sonarAlso.getVoltage() / 0.000977);
-		 * putNumber("Average ValueA mm", sonarAlso.getAverageValue() /
-		 * 0.000977); putNumber("Average VoltageA mm",
-		 * sonarAlso.getAverageVoltage() / 0.000977);
-		 */
-
+		putNumber("ahrs.vY", ahrs.getVelocityY());
+		
+		putNumber("ahrs.dX", ahrs.getDisplacementX());
+		putNumber("ahrs.dY", ahrs.getDisplacementY());
+		putNumber("ahrs.dZ", ahrs.getDisplacementZ());
+		putNumber("ahrs.angle", ahrs.getAngle());
+		
 		Timer.delay(0.005);
 	}
 
 	public static void putNumber(String key, double value) {
 		if (debugging)
-			SmartDashboard.putNumber(key, value);
+			// SmartDashboard.putNumber(key, value);
+			Preferences.getInstance().putDouble(key, value);
 	}
 
 	public static void putBoolean(String key, boolean value) {
 		if (debugging)
-			SmartDashboard.putBoolean(key, value);
+			// SmartDashboard.putBoolean(key, value);
+			Preferences.getInstance().putBoolean(key, value);
 	}
 
 	@Override
