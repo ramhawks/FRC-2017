@@ -2,12 +2,12 @@ package org.usfirst.frc.team3090.robot;
 
 public enum Path {
 	TEST("First",
-			new Distance(1),
+			new DistanceBehind(1),
 			new Rotation(90),
-			new Distance(1)),
+			new DistanceBehind(1)),
 	LEFT("Left"),
 	MIDDLE("Middle",
-			new Distance(93.25)),
+			new DistanceBehind(93.25)),
 	RIGHT("Right");
 
 	public final String name;

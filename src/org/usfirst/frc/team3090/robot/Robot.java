@@ -224,9 +224,9 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 			Step step = chosen_path.steps[index];
 
-			if (step instanceof Distance) {
+			if (step instanceof DistanceBehind) {
 
-				Distance d = (Distance) step;
+				DistanceBehind d = (DistanceBehind) step;
 
 				if (Math.abs(ahrs.getDisplacementY()) >= d.meters) {
 
