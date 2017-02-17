@@ -2,6 +2,8 @@ package org.usfirst.frc.team3090.robot;
 
 import com.ctre.CANTalon;
 
+import edu.wpi.first.wpilibj.VictorSP;
+
 public class Parts {
 	public static final int D1 = 15;
 	public static final int D2 = 12;
@@ -18,6 +20,8 @@ public class Parts {
 
 	public static final CANTalon lift_1 = new CANTalon(L1);
 	public static final CANTalon lift_2 = new CANTalon(L2);
+
+	public static final VictorSP ballShooter = new VictorSP(1);
 
 	public static void init() {
 		back_left.setInverted(true);
