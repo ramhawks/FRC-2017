@@ -191,7 +191,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		is_gear_fast = false;
 		setpoint_changed = false;
 
-		distance = new AnalogInput(3);
+		distance = new AnalogInput(2);
 
 	}
 
