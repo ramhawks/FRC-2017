@@ -49,10 +49,6 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 	double rotateToAngleRate;
 
-	/*
-	 * AnalogInput sonar; AnalogInput sonarAlso;
-	 */
-
 	private boolean switching_gears;
 	private long last_time;
 	private DoubleSolenoid gear_switch;
