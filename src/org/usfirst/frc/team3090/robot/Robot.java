@@ -1,5 +1,7 @@
 package org.usfirst.frc.team3090.robot;
 
+import java.nio.ByteBuffer;
+
 import org.opencv.core.Mat;
 
 import com.kauailabs.navx.frc.AHRS;
@@ -63,6 +65,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 	volatile AnalogInput pressure_sensor;
 
+	private AnalogInput distance;
+
 	@Override
 	public void robotInit() {
 		debugging = Preferences.getInstance().getBoolean("Debug", false);
@@ -110,7 +114,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 			}
 		});
 
-		// vision_thread.start();
+		vision_thread.start();
 
 		smart_dashboard_info = new Thread(() -> {
 			pressure_sensor = new AnalogInput(1);
@@ -118,35 +122,40 @@ public class Robot extends IterativeRobot implements PIDOutput {
 			while (!Thread.interrupted()) {
 
 				// SmartDashboard.putNumber("PSI", )
-				/*SmartDashboard.putNumber("PSI", (pressure_sensor.getVoltage() - 0.5) / 0.018);
-				putNumber("Pressure Sensor Voltage", pressure_sensor.getVoltage());
-				putNumber("Pressure Sensor Value", pressure_sensor.getValue());
+				/*
+				 * SmartDashboard.putNumber("PSI", (pressure_sensor.getVoltage()
+				 * - 0.5) / 0.018); putNumber("Pressure Sensor Voltage",
+				 * pressure_sensor.getVoltage());
+				 * putNumber("Pressure Sensor Value",
+				 * pressure_sensor.getValue());
+				 * 
+				 * debugging = Preferences.getInstance().getBoolean("Debug",
+				 * false);
+				 * 
+				 * putNumber("axis.left.x", stick.getX());
+				 * putNumber("axis.left.y", stick.getY());
+				 * putBoolean("button.a", stick.getRawButton(1));
+				 * putBoolean("button.b", stick.getRawButton(2));
+				 * putBoolean("button.x", stick.getRawButton(3));
+				 * putBoolean("button.y", stick.getRawButton(4));
+				 * putBoolean("button.lb", stick.getRawButton(5));
+				 * putBoolean("button.rb", stick.getRawButton(6));
+				 * putBoolean("button.back", stick.getRawButton(7));
+				 * putBoolean("button.start", stick.getRawButton(8));
+				 * putBoolean("button.left_stick", stick.getRawButton(9));
+				 * 
+				 * putNumber("ahrs.dX", ahrs.getDisplacementX());
+				 * putNumber("ahrs.dY", ahrs.getDisplacementY());
+				 * putNumber("ahrs.dZ", ahrs.getDisplacementZ());
+				 * putNumber("ahrs.angle", ahrs.getAngle());
+				 */
 
-				debugging = Preferences.getInstance().getBoolean("Debug", false);
-
-				putNumber("axis.left.x", stick.getX());
-				putNumber("axis.left.y", stick.getY());
-				putBoolean("button.a", stick.getRawButton(1));
-				putBoolean("button.b", stick.getRawButton(2));
-				putBoolean("button.x", stick.getRawButton(3));
-				putBoolean("button.y", stick.getRawButton(4));
-				putBoolean("button.lb", stick.getRawButton(5));
-				putBoolean("button.rb", stick.getRawButton(6));
-				putBoolean("button.back", stick.getRawButton(7));
-				putBoolean("button.start", stick.getRawButton(8));
-				putBoolean("button.left_stick", stick.getRawButton(9));
-
-				putNumber("ahrs.dX", ahrs.getDisplacementX());
-				putNumber("ahrs.dY", ahrs.getDisplacementY());
-				putNumber("ahrs.dZ", ahrs.getDisplacementZ());
-				putNumber("ahrs.angle", ahrs.getAngle());*/
-				
 				try {
 					Thread.sleep(10);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-				
+
 			}
 		});
 		smart_dashboard_info.start();
@@ -185,6 +194,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		gear_switch = new DoubleSolenoid(1, 0, 1);
 		is_gear_fast = false;
 		setpoint_changed = false;
+
+		distance = new AnalogInput(3);
 
 	}
 
@@ -278,6 +289,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	@Override
 	public void teleopPeriodic() {
 
+		Parts.ballShooter.set(stick.getRawAxis(3));
+
 		// double lift_speed = SmartDashboard.getNumber("Lift", 0.5);
 		double lift_speed = Preferences.getInstance().getDouble("Lift", 0.5);
 
@@ -365,12 +378,17 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		putBoolean("button.left_stick", stick.getRawButton(9));
 
 		putNumber("ahrs.vY", ahrs.getVelocityY());
-		
+
 		putNumber("ahrs.dX", ahrs.getDisplacementX());
 		putNumber("ahrs.dY", ahrs.getDisplacementY());
 		putNumber("ahrs.dZ", ahrs.getDisplacementZ());
 		putNumber("ahrs.angle", ahrs.getAngle());
-		
+
+		putNumber("d.voltage", distance.getVoltage());
+		putNumber("d.value", distance.getValue());
+
+		putString("distance", (distance.getVoltage() * 1024) + "mm");
+
 		Timer.delay(0.005);
 	}
 
@@ -384,6 +402,17 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		if (debugging)
 			// SmartDashboard.putBoolean(key, value);
 			Preferences.getInstance().putBoolean(key, value);
+	}
+
+	public static void putString(String key, String value) {
+		if (debugging)
+			Preferences.getInstance().putString(key, value);
+	}
+
+	public static void putByteArray(String key, byte[] value) {
+		if (debugging) {
+			Preferences.getInstance().putInt(key, ByteBuffer.wrap(value).getInt());
+		}
 	}
 
 	@Override
