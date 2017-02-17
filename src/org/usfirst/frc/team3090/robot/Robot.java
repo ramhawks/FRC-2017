@@ -228,7 +228,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 				DistanceBehind d = (DistanceBehind) step;
 
-				if (Math.abs(ahrs.getDisplacementY()) >= d.meters) {
+				if (getMeters() >= d.meters) {
 
 					myRobot.drive(0, 0);
 
@@ -388,6 +388,10 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		Timer.delay(0.005);
 	}
 
+	public double getMeters() {		
+		return (distance.getVoltage() * 1024) / 1000;
+	}
+	
 	public static void putNumber(String key, double value) {
 		if (debugging)
 			// SmartDashboard.putNumber(key, value);
