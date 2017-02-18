@@ -61,7 +61,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 	volatile AnalogInput pressure_sensor;
 
-	private AnalogInput distance;
+	private AnalogInput distance_behind;
+	private AnalogInput distance_ahead;
 
 	@Override
 	public void robotInit() {
@@ -154,7 +155,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 			}
 		});
-		smart_dashboard_info.start();
+		//smart_dashboard_info.start();
 
 		chooser = new SendableChooser<>();
 		for (Path p : Path.values()) {
@@ -191,8 +192,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		is_gear_fast = false;
 		setpoint_changed = false;
 
-		distance = new AnalogInput(2);
-
+		distance_behind = new AnalogInput(2);
+		distance_ahead = new AnalogInput(3);
 	}
 
 	@Override
@@ -228,7 +229,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 				DistanceBehind d = (DistanceBehind) step;
 
-				if (getMeters() >= d.meters) {
+				if (getMetersBehind() >= d.meters) {
 
 					myRobot.drive(0, 0);
 
@@ -242,7 +243,27 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 				}
 
-			} else if (step instanceof Rotation) {
+			} else if (step instanceof DistanceAhead) {
+
+				DistanceAhead d = (DistanceAhead) step;
+
+				if (getMetersAhead() >= d.meters) {
+
+					myRobot.drive(0, 0);
+
+					index++;
+
+					ahrs.reset();
+
+				} else {
+
+					myRobot.drive(-0.5, 0);
+
+				}
+
+			}
+			
+			else if (step instanceof Rotation) {
 
 				Rotation r = (Rotation) step;
 
@@ -380,16 +401,20 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		putNumber("ahrs.dZ", ahrs.getDisplacementZ());
 		putNumber("ahrs.angle", ahrs.getAngle());
 
-		putNumber("d.voltage", distance.getVoltage());
-		putNumber("d.value", distance.getValue());
+		putNumber("d.voltage", distance_behind.getVoltage());
+		putNumber("d.value", distance_behind.getValue());
 
-		putString("distance", (distance.getVoltage() * 1024) + "mm");
+		putString("distance", (distance_behind.getVoltage() * 1024) + "mm");
 
 		Timer.delay(0.005);
 	}
 
-	public double getMeters() {		
-		return (distance.getVoltage() * 1024) / 1000;
+	public double getMetersBehind() {		
+		return (distance_behind.getVoltage() * 1024) / 1000;
+	}
+	
+	public double getMetersAhead() {
+		return (distance_ahead.getVoltage() * 1024) / 1000;
 	}
 	
 	public static void putNumber(String key, double value) {
