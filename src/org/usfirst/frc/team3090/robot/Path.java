@@ -1,7 +1,7 @@
 package org.usfirst.frc.team3090.robot;
 
 public enum Path {
-	TEST("First",
+	TEST("Test",
 			new DistanceBehind(1),
 			new Rotation(90),
 			new DistanceBehind(1)),
