@@ -2,15 +2,11 @@ package org.usfirst.frc.team3090.robot;
 
 import java.nio.ByteBuffer;
 
-import org.opencv.core.Mat;
-
 import com.kauailabs.navx.frc.AHRS;
 
-import edu.wpi.cscore.CvSink;
-import edu.wpi.cscore.CvSource;
-import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -27,17 +23,19 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends IterativeRobot implements PIDOutput {
-	public volatile static boolean debugging;
+	public boolean debugging;
 
 	RobotDrive myRobot;
-	volatile Joystick stick;
+	Joystick stick;
+	
+	Compressor compressor;
 
 	private Path chosen_path;
 	private boolean path = false;
 
 	SendableChooser<String> chooser;
 
-	volatile AHRS ahrs;
+	AHRS ahrs;
 	PIDController rotationController;
 
 	private static final double kP = 0.03;
@@ -55,11 +53,11 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	private boolean is_gear_fast;
 	private boolean setpoint_changed;
 
-	volatile Thread vision_thread;
+	Thread vision_thread;
 
-	volatile Thread smart_dashboard_info;
+	Thread smart_dashboard_info;
 
-	volatile AnalogInput pressure_sensor;
+	AnalogInput pressure_sensor;
 
 	private AnalogInput distance_behind;
 	private AnalogInput distance_ahead;
@@ -67,106 +65,28 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	@Override
 	public void robotInit() {
 		debugging = Preferences.getInstance().getBoolean("Debug", false);
-
-		Parts.init();
-
-		myRobot = new RobotDrive(Parts.back_left, Parts.front_left, Parts.back_right, Parts.front_right);
-		stick = new Joystick(0);
-
-		vision_thread = new Thread(() -> {
-			// Get the Axis camera from CameraServer
-			// AxisCamera camera =
-			// CameraServer.getInstance().addAxisCamera("axis-camera.local");
-
-			UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
-			camera.setResolution(640, 480);
-
-			// Get a CvSink. This will capture Mats from the camera
-			CvSink cvSink = CameraServer.getInstance().getVideo();
-			// Setup a CvSource. This will send images back to the Dashboard
-			CvSource outputStream = CameraServer.getInstance().putVideo("Camera", 640, 480);
-
-			// Mats are very memory expensive. Lets reuse this Mat.
-			Mat mat = new Mat();
-
-			// This cannot be 'true'. The program will never exit if it is. This
-			// lets the robot stop this thread when restarting robot code or
-			// deploying.
-			while (!Thread.interrupted()) {
-				// Tell the CvSink to grab a frame from the camera and put it
-				// in the source mat. If there is an error notify the output.
-				if (cvSink.grabFrame(mat) == 0) {
-					// Send the output the error.
-					outputStream.notifyError(cvSink.getError());
-					// skip the rest of the current iteration
-					continue;
-				}
-				// Put a rectangle on the image
-				/*
-				 * Imgproc.rectangle(mat, new Point(100, 100), new Point(400,
-				 * 400), new Scalar(255, 255, 255), 5);
-				 */
-				// Give the output stream a new image to display
-				outputStream.putFrame(mat);
-			}
-		});
-
-		vision_thread.start();
-
-		smart_dashboard_info = new Thread(() -> {
-			pressure_sensor = new AnalogInput(1);
-
-			while (!Thread.interrupted()) {
-
-				// SmartDashboard.putNumber("PSI", )
-				/*
-				 * SmartDashboard.putNumber("PSI", (pressure_sensor.getVoltage()
-				 * - 0.5) / 0.018); putNumber("Pressure Sensor Voltage",
-				 * pressure_sensor.getVoltage());
-				 * putNumber("Pressure Sensor Value",
-				 * pressure_sensor.getValue());
-				 * 
-				 * debugging = Preferences.getInstance().getBoolean("Debug",
-				 * false);
-				 * 
-				 * putNumber("axis.left.x", stick.getX());
-				 * putNumber("axis.left.y", stick.getY());
-				 * putBoolean("button.a", stick.getRawButton(1));
-				 * putBoolean("button.b", stick.getRawButton(2));
-				 * putBoolean("button.x", stick.getRawButton(3));
-				 * putBoolean("button.y", stick.getRawButton(4));
-				 * putBoolean("button.lb", stick.getRawButton(5));
-				 * putBoolean("button.rb", stick.getRawButton(6));
-				 * putBoolean("button.back", stick.getRawButton(7));
-				 * putBoolean("button.start", stick.getRawButton(8));
-				 * putBoolean("button.left_stick", stick.getRawButton(9));
-				 * 
-				 * putNumber("ahrs.dX", ahrs.getDisplacementX());
-				 * putNumber("ahrs.dY", ahrs.getDisplacementY());
-				 * putNumber("ahrs.dZ", ahrs.getDisplacementZ());
-				 * putNumber("ahrs.angle", ahrs.getAngle());
-				 */
-
-				try {
-					Thread.sleep(10);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-
-			}
-		});
-		//smart_dashboard_info.start();
-
+		
 		chooser = new SendableChooser<>();
 		for (Path p : Path.values()) {
 			chooser.addObject(p.name, p.name);
 		}
+		
+		chooser.addDefault("Nicht", "Nicht");
 
 		SmartDashboard.putData("Auto modes", chooser);
+		
+		Parts.init();
 
-		/*
-		 * sonar = new AnalogInput(5); sonarAlso = new AnalogInput(0);
-		 */
+		myRobot = new RobotDrive(Parts.back_left, Parts.front_left, Parts.back_right, Parts.front_right);
+		myRobot.setSafetyEnabled(false);
+		stick = new Joystick(0);
+		
+		compressor = new Compressor();
+		
+		CameraServer.getInstance().startAutomaticCapture();
+		
+
+		pressure_sensor = new AnalogInput(1);
 
 		putNumber("Lift", 0.5);
 
@@ -198,6 +118,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 	@Override
 	public void autonomousInit() {
+		//SmartDashboard.putData("Auto modes", chooser);
+		
 		String autoSelected = chooser.getSelected();
 		// String autoSelected = SmartDashboard.getString("Auto Selector",
 		// defaultAuto);
@@ -227,6 +149,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 			if (step instanceof DistanceBehind) {
 
+				DriverStation.reportWarning("Behind", false);
+				
 				DistanceBehind d = (DistanceBehind) step;
 
 				if (getMetersBehind() >= d.meters) {
@@ -244,7 +168,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 				}
 
 			} else if (step instanceof DistanceAhead) {
-
+				DriverStation.reportWarning("Ahead", false);
 				DistanceAhead d = (DistanceAhead) step;
 
 				if (getMetersAhead() >= d.meters) {
@@ -264,7 +188,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 			}
 			
 			else if (step instanceof Rotation) {
-
+				DriverStation.reportWarning("Rotation", false);
 				Rotation r = (Rotation) step;
 
 				rotationController.setSetpoint(r.angle);
@@ -290,10 +214,22 @@ public class Robot extends IterativeRobot implements PIDOutput {
 			if (!step.init)
 				step.init = true;
 
-			if (index >= chosen_path.steps.length)
+			if (index > chosen_path.steps.length)
 				path = false;
+			
+			DriverStation.reportWarning("Index: " + index, false);
+			DriverStation.reportWarning("Step: " + step.init, false);
+			DriverStation.reportWarning("Path: " + path, false);
+			
 		}
 
+	}
+
+	
+	
+	@Override
+	public void disabledInit() {
+		compressor.stop();
 	}
 
 	@Override
@@ -301,6 +237,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		ahrs.reset();
 		ahrs.resetDisplacement();
 		rotationController.setSetpoint(0);
+		
+		compressor.start();
 	}
 
 	@Override
@@ -320,6 +258,10 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		} else {
 			Parts.lift_1.set(0.0);
 			Parts.lift_2.set(0.0);
+		}
+		
+		if (!compressor.getPressureSwitchValue()) {
+			compressor.stop();
 		}
 
 		// Y toggles gears
@@ -355,7 +297,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 			gear_switch.set(Value.kOff);
 		}
 
-		if (Math.abs(stick.getRawAxis(4)) < 0.1) {
+		/*if (Math.abs(stick.getRawAxis(4)) < 0.1) {
 			if (setpoint_changed) {
 				setpoint_changed = false;
 				ahrs.reset();
@@ -374,13 +316,15 @@ public class Robot extends IterativeRobot implements PIDOutput {
 				myRobot.arcadeDrive(stick.getRawAxis(1), stick.getRawAxis(4));
 				setpoint_changed = true;
 			}
-		}
+		}*/
+		
+		myRobot.arcadeDrive(stick.getRawAxis(1), stick.getRawAxis(4));
 
 		SmartDashboard.putNumber("PSI", (pressure_sensor.getVoltage() - 0.5) / 0.018);
 		putNumber("Pressure Sensor Voltage", pressure_sensor.getVoltage());
 		putNumber("Pressure Sensor Value", pressure_sensor.getValue());
 
-		debugging = Preferences.getInstance().getBoolean("Debug", false);
+		debugging = Preferences.getInstance().getBoolean("Debug", true);
 
 		putNumber("axis.left.x", stick.getX());
 		putNumber("axis.left.y", stick.getY());
@@ -404,9 +348,10 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		putNumber("d.voltage", distance_behind.getVoltage());
 		putNumber("d.value", distance_behind.getValue());
 
-		putString("distance", (distance_behind.getVoltage() * 1024) + "mm");
+		putString("distance behind", (distance_behind.getVoltage() * 1024) + "mm");
+		putString("distance ahead", (distance_ahead.getVoltage() * 1024) + "mm");
 
-		Timer.delay(0.005);
+		Timer.delay(0.0005);
 	}
 
 	public double getMetersBehind() {		
@@ -417,27 +362,27 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		return (distance_ahead.getVoltage() * 1024) / 1000;
 	}
 	
-	public static void putNumber(String key, double value) {
-		if (debugging)
+	public void putNumber(String key, double value) {
+		//if (debugging)
 			// SmartDashboard.putNumber(key, value);
 			Preferences.getInstance().putDouble(key, value);
 	}
 
-	public static void putBoolean(String key, boolean value) {
-		if (debugging)
+	public void putBoolean(String key, boolean value) {
+		//if (debugging)
 			// SmartDashboard.putBoolean(key, value);
 			Preferences.getInstance().putBoolean(key, value);
 	}
 
-	public static void putString(String key, String value) {
-		if (debugging)
+	public void putString(String key, String value) {
+		//if (debugging)
 			Preferences.getInstance().putString(key, value);
 	}
 
-	public static void putByteArray(String key, byte[] value) {
-		if (debugging) {
+	public void putByteArray(String key, byte[] value) {
+		//if (debugging) {
 			Preferences.getInstance().putInt(key, ByteBuffer.wrap(value).getInt());
-		}
+		//}
 	}
 
 	@Override
