@@ -1,11 +1,9 @@
 package org.usfirst.frc.team3090.robot;
 
-import java.io.File;
 import java.nio.ByteBuffer;
 
 import com.kauailabs.navx.frc.AHRS;
 
-import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
@@ -55,9 +53,9 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	private boolean is_gear_fast;
 	private boolean setpoint_changed;
 
-//	Thread vision_thread;
+	// Thread vision_thread;
 
-//	Thread smart_dashboard_info;
+	// Thread smart_dashboard_info;
 
 	AnalogInput pressure_sensor;
 
@@ -65,12 +63,12 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	private AnalogInput distance_ahead;
 
 	private int robotInit = 0;
-	
+
 	@Override
 	public void robotInit() {
-		robotInit++;		
+		robotInit++;
 		SmartDashboard.putString("Robot Init", "Robot Init: " + robotInit);
-		
+
 		debugging = Preferences.getInstance().getBoolean("Debug", false);
 
 		chooser = new SendableChooser<>();
@@ -92,7 +90,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		compressor.setClosedLoopControl(true);
 
 		CameraServer.getInstance().startAutomaticCapture();
-		
+
 		pressure_sensor = new AnalogInput(1);
 
 		putNumber("Lift", 0.5);
@@ -121,11 +119,11 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 		distance_behind = new AnalogInput(2);
 		distance_ahead = new AnalogInput(3);
-		
+
 	}
 
 	int autoInit = 0;
-	
+
 	@Override
 	public void autonomousInit() {
 		autoInit++;
@@ -157,7 +155,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	public void autonomousPeriodic() {
 		autoPeriod++;
 		SmartDashboard.putString("Auto Period", "Auto Period: " + autoPeriod);
-		
+
 		values();
 
 		if (path) {
@@ -209,7 +207,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 				rotationController.setSetpoint(r.angle);
 				rotationController.enable();
 
-				if (r.init){
+				if (r.init) {
 					if (rotationController.get() != 0) {
 
 						myRobot.arcadeDrive(0, rotateToAngleRate);
@@ -242,7 +240,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	}
 
 	int disableInit = 0;
-	
+
 	@Override
 	public void disabledInit() {
 		SmartDashboard.putString("Disable Init", "Disable Init: " + disableInit);
@@ -250,22 +248,22 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	}
 
 	int teleopInit = 0;
-	
+
 	@Override
 	public void teleopInit() {
 		SmartDashboard.putString("Teleop Init", "Teleop Init: " + teleopInit);
-		
+
 		ahrs.reset();
 		ahrs.resetDisplacement();
 		rotationController.setSetpoint(0);
 	}
 
 	int teleopPeriod = 0;
-	
+
 	@Override
 	public void teleopPeriodic() {
 		SmartDashboard.putString("Teleop Period", "Teleop Period: " + teleopPeriod);
-		
+
 		values();
 
 		Parts.ballShooter.set(stick.getRawAxis(3));
