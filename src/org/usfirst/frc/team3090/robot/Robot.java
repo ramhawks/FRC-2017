@@ -259,6 +259,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	}
 
 	int teleopPeriod = 0;
+	boolean b = false;
 
 	@Override
 	public void teleopPeriodic() {
@@ -281,6 +282,18 @@ public class Robot extends IterativeRobot implements PIDOutput {
 			Parts.lift_1.set(0.0);
 			Parts.lift_2.set(0.0);
 		}
+
+		// B toggles lift speed
+		if (stick.getRawButton(2)) {
+			if (!b) {
+				if (lift_speed == 0.5)
+					Preferences.getInstance().putDouble("Lift", 1);
+				else
+					Preferences.getInstance().putDouble("Lift", 0.5);
+			}
+			b = true;
+		} else
+			b = false;
 
 		// Y toggles gears
 		if (stick.getRawButton(4)) {
