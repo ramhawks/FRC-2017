@@ -84,7 +84,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		compressor = new Compressor();
 		compressor.setClosedLoopControl(true);
 
-		CameraServer.getInstance().startAutomaticCapture();
+		CameraServer.getInstance().startAutomaticCapture().setResolution(320, 240);
 
 		pressure_sensor = new AnalogInput(1);
 
