@@ -6,15 +6,17 @@ public enum Path {
 			new Rotation(90),
 			new DistanceBehind(1)),
 	LEFT("Left",
-			new DistanceBehind(3),
+			new DistanceBehind(2.5),
 			new Rotation(60),
 			new DistanceAhead(0.4)),
 	MIDDLE("Middle",
 			new DistanceAhead(0.4)),
 	RIGHT("Right",
-			new DistanceBehind(3),
+			new DistanceBehind(2.5),
 			new Rotation(-60),
-			new DistanceAhead(0.4));
+			new DistanceAhead(0.4)),
+	SIXTY("Sixty",
+			new Rotation(60));
 
 	public final String name;
 
