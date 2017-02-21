@@ -84,7 +84,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		compressor = new Compressor();
 		compressor.setClosedLoopControl(true);
 
-		CameraServer.getInstance().startAutomaticCapture().setResolution(320, 240);
+		// CameraServer.getInstance().startAutomaticCapture();
 
 		pressure_sensor = new AnalogInput(1);
 
@@ -140,6 +140,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	}
 
 	int index;
+	double meters_behind;
+	double meters_ahead;
 
 	@Override
 	public void autonomousPeriodic() {
@@ -154,8 +156,11 @@ public class Robot extends IterativeRobot implements PIDOutput {
 				DriverStation.reportWarning("Behind", false);
 
 				DistanceBehind d = (DistanceBehind) step;
+				
+				meters_behind = getMetersBehind();
+				putNumber("Meters Behind", meters_behind);
 
-				if (getMetersBehind() >= d.meters) {
+				if (meters_behind >= d.meters) {
 
 					myRobot.arcadeDrive(0, 0);
 
@@ -165,7 +170,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 				} else {
 
-					myRobot.arcadeDrive(-0.5, 0);
+					myRobot.arcadeDrive(-0.4, 0);
 
 				}
 
@@ -173,7 +178,10 @@ public class Robot extends IterativeRobot implements PIDOutput {
 				DriverStation.reportWarning("Ahead", false);
 				DistanceAhead d = (DistanceAhead) step;
 
-				if (getMetersAhead() >= d.meters) {
+				meters_ahead = getMetersAhead();
+				putNumber("Meters Ahead", meters_ahead);
+				
+				if (meters_ahead <= d.meters) {
 
 					myRobot.arcadeDrive(0, 0);
 
@@ -183,7 +191,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 				} else {
 
-					myRobot.arcadeDrive(-0.5, 0);
+					myRobot.arcadeDrive(-0.4, 0);
 
 				}
 
@@ -219,11 +227,11 @@ public class Robot extends IterativeRobot implements PIDOutput {
 				path = false;
 
 			DriverStation.reportWarning("Index: " + index, false);
-			DriverStation.reportWarning("Step: " + step.init, false);
-			DriverStation.reportWarning("Path: " + path, false);
+			DriverStation.reportWarning("Init: " + step.init, false);
 
 		}
 
+		Timer.delay(0.001);
 	}
 
 	@Override
@@ -234,6 +242,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	@Override
 	public void disabledPeriodic() {
 		values();
+		Timer.delay(0.001);
 	}
 
 	@Override
@@ -328,7 +337,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 		myRobot.arcadeDrive(stick.getRawAxis(1), stick.getRawAxis(4));
 
-		Timer.delay(0.0005);
+		Timer.delay(0.001);
 	}
 
 	public double getMetersBehind() {
@@ -403,6 +412,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	@Override
 	public void testPeriodic() {
 		values();
+		Timer.delay(0.001);
 	}
 
 	@Override
