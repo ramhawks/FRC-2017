@@ -62,13 +62,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	private AnalogInput distance_behind;
 	private AnalogInput distance_ahead;
 
-	private int robotInit = 0;
-
 	@Override
 	public void robotInit() {
-		robotInit++;
-		SmartDashboard.putString("Robot Init", "Robot Init: " + robotInit);
-
 		debugging = Preferences.getInstance().getBoolean("Debug", false);
 
 		chooser = new SendableChooser<>();
@@ -122,12 +117,8 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 	}
 
-	int autoInit = 0;
-
 	@Override
 	public void autonomousInit() {
-		autoInit++;
-		SmartDashboard.putString("Auto Init", "Auto Init: " + autoInit);
 		// SmartDashboard.putData("Auto modes", chooser);
 
 		String autoSelected = chooser.getSelected();
@@ -149,13 +140,9 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	}
 
 	int index;
-	int autoPeriod = 0;
 
 	@Override
 	public void autonomousPeriodic() {
-		autoPeriod++;
-		SmartDashboard.putString("Auto Period", "Auto Period: " + autoPeriod);
-
 		values();
 
 		if (path) {
@@ -239,32 +226,22 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 	}
 
-	int disableInit = 0;
-
 	@Override
 	public void disabledInit() {
-		SmartDashboard.putString("Disable Init", "Disable Init: " + disableInit);
 		compressor.stop();
 	}
 
-	int teleopInit = 0;
-
 	@Override
 	public void teleopInit() {
-		SmartDashboard.putString("Teleop Init", "Teleop Init: " + teleopInit);
-
 		ahrs.reset();
 		ahrs.resetDisplacement();
 		rotationController.setSetpoint(0);
 	}
 
-	int teleopPeriod = 0;
 	boolean b = false;
 
 	@Override
 	public void teleopPeriodic() {
-		SmartDashboard.putString("Teleop Period", "Teleop Period: " + teleopPeriod);
-
 		values();
 
 		Parts.ballShooter.set(stick.getRawAxis(3));
