@@ -232,6 +232,11 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	}
 
 	@Override
+	public void disabledPeriodic() {
+		values();
+	}
+
+	@Override
 	public void teleopInit() {
 		ahrs.reset();
 		ahrs.resetDisplacement();
