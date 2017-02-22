@@ -218,8 +218,9 @@ public class Robot extends IterativeRobot implements PIDOutput {
 						myRobot.arcadeDrive(0, 0);
 
 					}
+				} else {
+					ahrs.reset();
 				}
-
 			} else if (step instanceof ForwardSecond) {
 				
 				ForwardSecond fs = (ForwardSecond) step;
@@ -357,6 +358,18 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		Timer.delay(0.001);
 	}
 
+	public static long getTimeForDistance(double d) {
+		
+		if (d <= 0.092964931) {
+			// t = sqrt(f(t)/3.499)
+			return (long)(1000 * Math.sqrt(d / 3.499));
+		} else {
+			// t = (f(t) - 0.092964931)/0.4672 + .163
+			return (long)(1000 * ((d - 0.092964931)/0.4672 + .163));
+		}
+		
+	}
+	
 	public double getMetersBehind() {
 		return (distance_behind.getVoltage() * 1024) / 1000;
 	}
