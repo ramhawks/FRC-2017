@@ -1,0 +1,4 @@
+
+* TODO: start with 10 balls
+
+* 
