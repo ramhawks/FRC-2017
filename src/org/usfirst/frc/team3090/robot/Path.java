@@ -16,7 +16,9 @@ public enum Path {
 			new Rotation(-60),
 			new DistanceAhead(0.4)),
 	SIXTY("Sixty",
-			new Rotation(60));
+			new Rotation(60)),
+	FIVESEC("5 sec",
+			new ForwardSecond(5000));
 
 	public final String name;
 

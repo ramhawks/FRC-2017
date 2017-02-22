@@ -137,11 +137,13 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		index = 0;
 		ahrs.reset();
 		ahrs.resetDisplacement();
+		time = -1;
 	}
 
 	int index;
 	double meters_behind;
 	double meters_ahead;
+	long time;
 
 	@Override
 	public void autonomousPeriodic() {
@@ -218,6 +220,21 @@ public class Robot extends IterativeRobot implements PIDOutput {
 					}
 				}
 
+			} else if (step instanceof ForwardSecond) {
+				
+				ForwardSecond fs = (ForwardSecond) step;
+				
+				if (fs.init) {
+					if (System.currentTimeMillis() - time >= fs.seconds) {
+						index++;
+						time = -1;
+						myRobot.arcadeDrive(0, 0);
+					} else {
+						myRobot.arcadeDrive(-0.5, 0);
+					}
+				} else
+					time = System.currentTimeMillis();
+				
 			}
 
 			if (!step.init)
