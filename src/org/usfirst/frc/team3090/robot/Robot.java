@@ -100,7 +100,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		rotationController = new PIDController(kP, kI, kD, ahrs, this);
 
 		rotationController.setInputRange(-180.0f, 180.0f);
-		rotationController.setOutputRange(-0.5, 0.5);
+		rotationController.setOutputRange(-0.65, 0.65);
 		rotationController.setAbsoluteTolerance(kToleranceDegrees);
 		rotationController.setContinuous(true);
 
