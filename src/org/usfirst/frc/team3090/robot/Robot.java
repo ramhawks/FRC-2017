@@ -236,6 +236,35 @@ public class Robot extends IterativeRobot implements PIDOutput {
 				} else
 					time = System.currentTimeMillis();
 				
+			} else if (step instanceof BackwardSecond) {
+
+				BackwardSecond bs = (BackwardSecond) step;
+				
+				if (bs.init) {
+					if (System.currentTimeMillis() - time >= bs.seconds) {
+						index++;
+						time = -1;
+						myRobot.arcadeDrive(0, 0);
+					} else {
+						myRobot.arcadeDrive(0.5, 0);
+					}
+				} else
+					time = System.currentTimeMillis();
+				
+			} else if (step instanceof ShootSecond) {
+				ShootSecond ss = (ShootSecond) step;
+				
+				if (ss.init) {
+					if (System.currentTimeMillis() - time >= ss.seconds) {
+						index++;
+						time = -1;
+						Parts.ballShooter.set(0.0);
+					} else {
+						Parts.ballShooter.set(1.0);						
+					}
+				} else {
+					time = System.currentTimeMillis();
+				}
 			}
 
 			if (!step.init)
