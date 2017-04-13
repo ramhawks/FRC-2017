@@ -23,15 +23,13 @@ public enum Path {
 	FIVESEC("3 sec",
 			new ForwardSecond(3000)),
 	BOILER_RIGHT("Boiler on Right",
-			new Rotation(45),
 			new BackwardSecond(1),
-			new ShootSecond(3),
+			new ShootSecond(5),
 			new Rotation(-45),
 			new BackwardSecond(1)),
 	BOILER_LEFT("Boiler on Left",
-			new Rotation(-45),
 			new ForwardSecond(1),
-			new ShootSecond(3),
+			new ShootSecond(5),
 			new Rotation(45),
 			new ForwardSecond(1));
 
