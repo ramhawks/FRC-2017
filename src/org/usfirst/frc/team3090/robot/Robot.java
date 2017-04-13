@@ -144,6 +144,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	double meters_behind;
 	double meters_ahead;
 	long time;
+	int rotation_loop_count;
 
 	@Override
 	public void autonomousPeriodic() {
@@ -203,23 +204,29 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 				rotationController.setSetpoint(r.angle);
 				rotationController.enable();
-
+				
+				DriverStation.reportWarning("Rotation Get: " + rotationController.get(), false);
+				
 				if (r.init) {
 					if (rotationController.get() != 0) {
-
+						
 						myRobot.arcadeDrive(0, rotateToAngleRate);
 
 					} else {
 
-						index++;
+						if (rotation_loop_count >= 5) {
+							index++;
 
-						ahrs.reset();
+							ahrs.reset();
 
-						myRobot.arcadeDrive(0, 0);
+							myRobot.arcadeDrive(0, 0);
+						} else
+							rotation_loop_count++;
 
 					}
 				} else {
 					ahrs.reset();
+					rotation_loop_count = 0;
 				}
 			} else if (step instanceof ForwardSecond) {
 				
