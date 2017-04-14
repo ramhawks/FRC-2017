@@ -18,8 +18,8 @@ public enum Path {
 			new ForwardSecond(Robot.getTimeForDistance(2.5)),
 			new Rotation(-60),
 			new ForwardSecond(Robot.getTimeForDistance(.5))),*/
-	SHOOT("Shoot",
-			new ShootSecond(1000)),
+	SHOOT("Shoot 3 sec",
+			new ShootSecond(3000)),
 	THREESEC("Forward 3 sec",
 			new ForwardSecond(3000)),
 	BOILER_RIGHT("Boiler on Right",
