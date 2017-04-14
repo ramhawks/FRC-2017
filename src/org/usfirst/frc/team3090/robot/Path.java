@@ -32,7 +32,7 @@ public enum Path {
 			new Rotation(45),
 			new ForwardSecond(3000)),
 	MIDDLE_PEG("Middle Peg",
-			new ForwardSecond(4000)),
+			new ForwardSecond(4500)),
 	NINETY("Rotate 90 Degrees",
 			new Rotation(90));
 
