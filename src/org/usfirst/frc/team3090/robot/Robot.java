@@ -206,9 +206,10 @@ public class Robot extends IterativeRobot implements PIDOutput {
 				rotationController.enable();
 				
 				DriverStation.reportWarning("Rotation Get: " + rotationController.get(), false);
+				DriverStation.reportWarning("Yaw: " + ahrs.getYaw(), false);
 				
 				if (r.init) {
-					if (rotationController.get() != 0) {
+					if (Math.abs(rotationController.get()) > 0.35) {
 						
 						myRobot.arcadeDrive(0, rotateToAngleRate);
 
@@ -240,9 +241,9 @@ public class Robot extends IterativeRobot implements PIDOutput {
 					} else {
 						myRobot.arcadeDrive(-0.5, 0);
 					}
-				} else
+				} else {
 					time = System.currentTimeMillis();
-				
+				}
 			} else if (step instanceof BackwardSecond) {
 
 				BackwardSecond bs = (BackwardSecond) step;
