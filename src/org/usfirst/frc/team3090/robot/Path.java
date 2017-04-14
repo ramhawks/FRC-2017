@@ -33,7 +33,7 @@ public enum Path {
 			new ForwardSecond(3000)),
 	MIDDLE_PEG("Middle Peg",
 			new ForwardSecond(4000)),
-	NINETY("90",
+	NINETY("Rotate 90 Degrees",
 			new Rotation(90));
 
 	public final String name;
