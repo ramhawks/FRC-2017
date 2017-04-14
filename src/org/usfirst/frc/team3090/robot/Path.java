@@ -20,7 +20,7 @@ public enum Path {
 			new ForwardSecond(Robot.getTimeForDistance(.5))),*/
 	SHOOT("Shoot",
 			new ShootSecond(1000)),
-	THREESEC("3 sec",
+	THREESEC("Forward 3 sec",
 			new ForwardSecond(3000)),
 	BOILER_RIGHT("Boiler on Right",
 			new ShootSecond(5000),
