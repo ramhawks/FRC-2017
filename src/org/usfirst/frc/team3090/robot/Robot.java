@@ -282,7 +282,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 						time = -1;
 						myRobot.arcadeDrive(0, 0);
 					} else {
-						myRobot.arcadeDrive(0, rs.milliseconds < 0 ? -0.65 : 0.65);
+						myRobot.arcadeDrive(0, rs.milliseconds < 0 ? -0.75 : 0.75);
 					}
 				} else {
 					time = System.currentTimeMillis();
