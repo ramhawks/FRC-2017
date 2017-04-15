@@ -277,7 +277,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 				RotationSecond rs = (RotationSecond) step;
 				
 				if (rs.init) {
-					if (System.currentTimeMillis() - time >= rs.milliseconds) {
+					if (System.currentTimeMillis() - time >= Math.abs(rs.milliseconds)) {
 						index++;
 						time = -1;
 						myRobot.arcadeDrive(0, 0);
