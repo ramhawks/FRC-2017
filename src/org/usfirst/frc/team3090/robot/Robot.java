@@ -234,7 +234,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 				ForwardSecond fs = (ForwardSecond) step;
 				
 				if (fs.init) {
-					if (System.currentTimeMillis() - time >= fs.seconds) {
+					if (System.currentTimeMillis() - time >= fs.milliseconds) {
 						index++;
 						time = -1;
 						myRobot.arcadeDrive(0, 0);
@@ -249,7 +249,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 				BackwardSecond bs = (BackwardSecond) step;
 				
 				if (bs.init) {
-					if (System.currentTimeMillis() - time >= bs.seconds) {
+					if (System.currentTimeMillis() - time >= bs.milliseconds) {
 						index++;
 						time = -1;
 						myRobot.arcadeDrive(0, 0);
@@ -263,7 +263,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 				ShootSecond ss = (ShootSecond) step;
 				
 				if (ss.init) {
-					if (System.currentTimeMillis() - time >= ss.seconds) {
+					if (System.currentTimeMillis() - time >= ss.milliseconds) {
 						index++;
 						time = -1;
 						Parts.ballShooter.set(0.0);
