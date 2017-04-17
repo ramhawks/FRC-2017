@@ -159,7 +159,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 				DriverStation.reportWarning("Behind", false);
 
 				DistanceBehind d = (DistanceBehind) step;
-				
+
 				meters_behind = getMetersBehind();
 				putNumber("Meters Behind", meters_behind);
 
@@ -183,7 +183,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 				meters_ahead = getMetersAhead();
 				putNumber("Meters Ahead", meters_ahead);
-				
+
 				if (meters_ahead <= d.meters) {
 
 					myRobot.arcadeDrive(0, 0);
@@ -204,13 +204,13 @@ public class Robot extends IterativeRobot implements PIDOutput {
 
 				rotationController.setSetpoint(r.angle);
 				rotationController.enable();
-				
+
 				DriverStation.reportWarning("Rotation Get: " + rotationController.get(), false);
 				DriverStation.reportWarning("Yaw: " + ahrs.getYaw(), false);
-				
+
 				if (r.init) {
 					if (Math.abs(rotationController.get()) > 0.35) {
-						
+
 						myRobot.arcadeDrive(0, rotateToAngleRate);
 
 					} else {
@@ -230,9 +230,9 @@ public class Robot extends IterativeRobot implements PIDOutput {
 					rotation_loop_count = 0;
 				}
 			} else if (step instanceof ForwardSecond) {
-				
+
 				ForwardSecond fs = (ForwardSecond) step;
-				
+
 				if (fs.init) {
 					if (System.currentTimeMillis() - time >= fs.milliseconds) {
 						index++;
@@ -247,7 +247,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 			} else if (step instanceof BackwardSecond) {
 
 				BackwardSecond bs = (BackwardSecond) step;
-				
+
 				if (bs.init) {
 					if (System.currentTimeMillis() - time >= bs.milliseconds) {
 						index++;
@@ -261,21 +261,21 @@ public class Robot extends IterativeRobot implements PIDOutput {
 				}
 			} else if (step instanceof ShootSecond) {
 				ShootSecond ss = (ShootSecond) step;
-				
+
 				if (ss.init) {
 					if (System.currentTimeMillis() - time >= ss.milliseconds) {
 						index++;
 						time = -1;
 						Parts.ballShooter.set(0.0);
 					} else {
-						Parts.ballShooter.set(1.0);						
+						Parts.ballShooter.set(1.0);
 					}
 				} else {
 					time = System.currentTimeMillis();
 				}
 			} else if (step instanceof RotationSecond) {
 				RotationSecond rs = (RotationSecond) step;
-				
+
 				if (rs.init) {
 					if (System.currentTimeMillis() - time >= Math.abs(rs.milliseconds)) {
 						index++;
@@ -392,14 +392,14 @@ public class Robot extends IterativeRobot implements PIDOutput {
 		 * if (Math.abs(stick.getRawAxis(4)) < 0.1) { if (setpoint_changed) {
 		 * setpoint_changed = false; ahrs.reset();
 		 * rotationController.setSetpoint(0); }
-		 * 
+		 *
 		 * rotationController.enable();
-		 * 
+		 *
 		 * if (!switching_gears) myRobot.arcadeDrive(stick.getRawAxis(1),
 		 * rotateToAngleRate);
-		 * 
+		 *
 		 * } else { rotationController.disable();
-		 * 
+		 *
 		 * if (!switching_gears) { myRobot.arcadeDrive(stick.getRawAxis(1),
 		 * stick.getRawAxis(4)); setpoint_changed = true; } }
 		 */
@@ -410,7 +410,7 @@ public class Robot extends IterativeRobot implements PIDOutput {
 	}
 
 	public static long getTimeForDistance(double d) {
-		
+
 		if (d <= 0.092964931) {
 			// t = sqrt(f(t)/3.499)
 			return (long)(1000 * Math.sqrt(d / 3.499));
@@ -418,9 +418,9 @@ public class Robot extends IterativeRobot implements PIDOutput {
 			// t = (f(t) - 0.092964931)/0.4672 + .163
 			return (long)(1000 * ((d - 0.092964931)/0.4672 + .163));
 		}
-		
+
 	}
-	
+
 	public double getMetersBehind() {
 		return (distance_behind.getVoltage() * 1024) / 1000;
 	}
